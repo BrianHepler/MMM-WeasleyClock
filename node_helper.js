@@ -1,8 +1,8 @@
 /* Magic Mirror
  * Node Helper: MMM-WeasleyClock
  *
- * By {{AUTHOR_NAME}}
- * {{LICENSE}} Licensed.
+ * By Brian Hepler
+ * MIT Licensed.
  */
 
 var NodeHelper = require("node_helper");

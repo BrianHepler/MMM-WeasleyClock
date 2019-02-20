@@ -3,13 +3,13 @@
 /* Magic Mirror
  * Module: MMM-WeasleyClock
  *
- * By {{AUTHOR_NAME}}
- * {{LICENSE}} Licensed.
+ * By Brian Hepler
+ * MIT Licensed.
  */
 
 Module.register("MMM-WeasleyClock", {
 	defaults: {
-		updateInterval: 60000,
+		updateInterval: 600000,
 		retryDelay: 5000
 	},
 
@@ -28,6 +28,7 @@ Module.register("MMM-WeasleyClock", {
 		setInterval(function() {
 			self.updateDom();
 		}, this.config.updateInterval);
+		console.log("Module identifier: " + this.identifier);
 	},
 
 	/*
@@ -39,11 +40,13 @@ Module.register("MMM-WeasleyClock", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
-		var retry = true;
+		var urlApi = "https://favqs.com/api/qotd";
+        var fullUrl = urlApi;
+        var retry = false;
 
 		var dataRequest = new XMLHttpRequest();
-		dataRequest.open("GET", urlApi, true);
+		console.log("Calling API with '" + fullUrl + "'");
+		dataRequest.open("GET", fullUrl, true);
 		dataRequest.onreadystatechange = function() {
 			console.log(this.readyState);
 			if (this.readyState === 4) {
@@ -86,14 +89,17 @@ Module.register("MMM-WeasleyClock", {
 
 	getDom: function() {
 		var self = this;
+		console.log("Updating DOM");
 
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
+		wrapper.className = "wrapper";
+
 		// If this.dataRequest is not empty
 		if (this.dataRequest) {
 			var wrapperDataRequest = document.createElement("div");
 			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.title;
+			wrapperDataRequest.innerHTML = this.dataRequest.quote.body;
 
 			var labelDataRequest = document.createElement("label");
 			// Use translate function
@@ -103,6 +109,11 @@ Module.register("MMM-WeasleyClock", {
 
 			wrapper.appendChild(labelDataRequest);
 			wrapper.appendChild(wrapperDataRequest);
+		} else {
+		    console.log("Nothing in package.");
+			wrapper.innerHTML = this.translate("No data retrieved.");
+			wrapper.classList.add("bright", "light", "small");
+			return wrapper;
 		}
 
 		// Data from helper
@@ -120,34 +131,29 @@ Module.register("MMM-WeasleyClock", {
 		return [];
 	},
 
-	getStyles: function () {
-		return [
-			"MMM-WeasleyClock.css",
-		];
-	},
+	// getStyles: function () {
+	// 	return [
+	// 		"MMM-WeasleyClock.css",
+	// 	];
+	// },
 
-	// Load translations files
-	getTranslations: function() {
-		//FIXME: This can be load a one file javascript definition
-		return {
-			en: "translations/en.json",
-			es: "translations/es.json"
-		};
-	},
+
 
 	processData: function(data) {
+		console.log("Processing retrieved data.");
 		var self = this;
 		this.dataRequest = data;
 		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
 		this.loaded = true;
 
-		// the data if load
 		// send notification to helper
 		this.sendSocketNotification("MMM-WeasleyClock-NOTIFICATION_TEST", data);
+		console.log("Processed.");
 	},
 
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
+		console.log("Received notification from helper.");
 		if(notification === "MMM-WeasleyClock-NOTIFICATION_TEST") {
 			// set dataNotification
 			this.dataNotification = payload;
