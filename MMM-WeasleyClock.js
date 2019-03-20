@@ -11,12 +11,17 @@ Module.register("MMM-WeasleyClock", {
 	defaults: {
 		updateInterval: 60000,
 		retryDelay: 5000,
+		owner: "default",
+		debug: false,
 		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
 		devices: [
 			{ name: "Brian", id: "m1"},
 			{ name: "Cracked", id: "m2"},
 			{ name: "Deverina", id: "d1"}
-		]
+		],
+		host: "weasleymirror.duckdns.org",
+		port: 8883,
+		cafile: "weasleymirror-ca.crt"
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -45,7 +50,7 @@ Module.register("MMM-WeasleyClock", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = "https://jsonplaceholder.typicode.com/posts/1";
+		var urlApi = host;
 		var retry = true;
 
 		var dataRequest = new XMLHttpRequest();
