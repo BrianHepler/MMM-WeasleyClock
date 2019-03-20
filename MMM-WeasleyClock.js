@@ -3,14 +3,20 @@
 /* Magic Mirror
  * Module: MMM-WeasleyClock
  *
- * By {{AUTHOR_NAME}}
- * {{LICENSE}} Licensed.
+ * By Brian Hepler
+ * MIT Licensed.
  */
 
 Module.register("MMM-WeasleyClock", {
 	defaults: {
 		updateInterval: 60000,
-		retryDelay: 5000
+		retryDelay: 5000,
+		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
+		devices: [
+			{ name: "Brian", id: "m1"},
+			{ name: "Cracked", id: "m2"},
+			{ name: "Deverina", id: "d1"}
+		]
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -89,20 +95,21 @@ Module.register("MMM-WeasleyClock", {
 
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
+		wrapper.id = "weasleyClock"
 		// If this.dataRequest is not empty
 		if (this.dataRequest) {
-			var wrapperDataRequest = document.createElement("div");
-			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.title;
+			// var wrapperDataRequest = document.createElement("div");
+			// wrapperDataRequest.innerHTML = this.dataRequest.title;
 
-			var labelDataRequest = document.createElement("label");
-			// Use translate function
-			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("TITLE");
+			// var labelDataRequest = document.createElement("label");
+			// // Use translate function
+			// //             this id defined in translations files
+			// labelDataRequest.innerHTML = this.translate("TITLE");
 
 
-			wrapper.appendChild(labelDataRequest);
-			wrapper.appendChild(wrapperDataRequest);
+			// wrapper.appendChild(labelDataRequest);
+			// wrapper.appendChild(wrapperDataRequest);
+			wrapper.appendChild(myclock1("weasleyClock"));
 		}
 
 		// Data from helper
@@ -117,7 +124,7 @@ Module.register("MMM-WeasleyClock", {
 	},
 
 	getScripts: function() {
-		return [];
+		return ["analogclock.js"];
 	},
 
 	getStyles: function () {
@@ -126,14 +133,6 @@ Module.register("MMM-WeasleyClock", {
 		];
 	},
 
-	// Load translations files
-	getTranslations: function() {
-		//FIXME: This can be load a one file javascript definition
-		return {
-			en: "translations/en.json",
-			es: "translations/es.json"
-		};
-	},
 
 	processData: function(data) {
 		var self = this;
