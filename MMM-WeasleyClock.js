@@ -50,7 +50,7 @@ Module.register("MMM-WeasleyClock", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = host;
+		var urlApi = self.host;
 		var retry = true;
 
 		var dataRequest = new XMLHttpRequest();
@@ -98,9 +98,31 @@ Module.register("MMM-WeasleyClock", {
 	getDom: function() {
 		var self = this;
 
+
+		
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div");
-		wrapper.id = "weasleyClock"
+		wrapper.id = "weasleyClockID"
+		
+		if (this.config.debug) {
+			// variable dump
+			wrapper.className = "weasleyClock"
+			wrapper.innerHTML = "Loaded variables"
+			var para = document.createElement("p")
+			para.innerHTML = "updateInterval: " + this.config.updateInterval
+			para.innerHTML += "<br>retryDelay: " + this.config.retryDelay
+			para.innerHTML += "<br>owner: " + this.config.owner
+			para.innerHTML += "<br> locations: " + this.config.locations
+			para.innerHTML += "<br> devices: " + this.config.devices
+			para.innerHTML += "<br> host: " + this.config.host
+			para.innerHTML += "<br> port: " + this.config.port
+			para.innerHTML += "<br> ca file: " + this.config.cafile
+
+			wrapper.appendChild(para)
+		}
+		
+		// ***** Disabled for testing purposes *****
+		/*
 		// If this.dataRequest is not empty
 		if (this.dataRequest) {
 			// var wrapperDataRequest = document.createElement("div");
@@ -125,6 +147,8 @@ Module.register("MMM-WeasleyClock", {
 
 			wrapper.appendChild(wrapperDataNotification);
 		}
+
+		*/
 		return wrapper;
 	},
 
@@ -138,10 +162,10 @@ Module.register("MMM-WeasleyClock", {
 		];
 	},
 
-
 	processData: function(data) {
 		var self = this;
 		this.dataRequest = data;
+		log.console("Processing data retrieved from server.")
 		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
 		this.loaded = true;
 
@@ -158,4 +182,13 @@ Module.register("MMM-WeasleyClock", {
 			this.updateDom();
 		}
 	},
+
+	// override for testing purposes
+	notificationReceived: function(notification, payload, sender) {
+		switch(notification) {
+		  case "DOM_OBJECTS_CREATED":
+			console.log(this.name + " received notification " + notification);
+			break
+		}
+	  },
 });
