@@ -6,8 +6,14 @@
  */
 
 var NodeHelper = require("node_helper");
+var mqtt = require("mosquitto-clients");
 
 module.exports = NodeHelper.create({
+
+	// Initialize MQTT connection object
+	start: function() {
+		// var client = new Messaging.Client()
+	},
 
 	// Override socketNotificationReceived method.
 
@@ -18,11 +24,26 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function(notification, payload) {
+		if (notification === "MMM-WeasleyClock-CONFIG") {
+			this.establishConnection(payload)
+		}
+
 		if (notification === "MMM-WeasleyClock-NOTIFICATION_START") {
 			console.log("Starting Weasley Clock message client. Notification:", notification, "payload: ", payload);
 			// Send notification
 			this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
 		}
+	},
+
+	establishConnection: function(config) {
+		var options = {
+			clientid: payload.clientid,
+			
+		}
+		var url = payload.url
+		var host = payload.host
+		var topic = payload.topic
+		var client = mqtt.connect(url, )
 	},
 
 	// Example function send notification test

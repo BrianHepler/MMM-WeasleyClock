@@ -39,6 +39,9 @@ Module.register("MMM-WeasleyClock", {
 		setInterval(function() {
 			self.updateDom();
 		}, this.config.updateInterval);
+
+		// send config to node helper
+		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
 	/*
