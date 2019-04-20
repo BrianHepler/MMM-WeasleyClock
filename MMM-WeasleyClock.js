@@ -9,8 +9,19 @@
 
 Module.register("MMM-WeasleyClock", {
 	defaults: {
-		updateInterval: 600000,
-		retryDelay: 5000
+		updateInterval: 60000,
+		retryDelay: 5000,
+		owner: "default",
+		debug: false,
+		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
+		devices: [
+			{ name: "Brian", id: "m1"},
+			{ name: "Cracked", id: "m2"},
+			{ name: "Deverina", id: "d1"}
+		],
+		host: "weasleymirror.duckdns.org",
+		port: 8883,
+		cafile: "weasleymirror-ca.crt"
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -28,7 +39,9 @@ Module.register("MMM-WeasleyClock", {
 		setInterval(function() {
 			self.updateDom();
 		}, this.config.updateInterval);
-		console.log("Module identifier: " + this.identifier);
+
+		// send config to node helper
+		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
 	/*
@@ -40,9 +53,8 @@ Module.register("MMM-WeasleyClock", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = "https://favqs.com/api/qotd";
-        var fullUrl = urlApi;
-        var retry = false;
+		var urlApi = self.host;
+		var retry = true;
 
 		var dataRequest = new XMLHttpRequest();
 		console.log("Calling API with '" + fullUrl + "'");
@@ -76,7 +88,7 @@ Module.register("MMM-WeasleyClock", {
 	 *  If empty, this.config.updateInterval is used.
 	 */
 	scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval;
+		var nextLoad = this.config.updateInterval
 		if (typeof delay !== "undefined" && delay >= 0) {
 			nextLoad = delay;
 		}
@@ -89,31 +101,44 @@ Module.register("MMM-WeasleyClock", {
 
 	getDom: function() {
 		var self = this;
-		console.log("Updating DOM");
+		console.log("Updating DOM")
 
 		// create element wrapper for show into the module
-		var wrapper = document.createElement("div");
-		wrapper.className = "wrapper";
+		var wrapper = document.createElement("div")
+		wrapper.id = "weasleyClockID"
+		wrapper.className = "weasleyClock"
 
+		if (this.config.debug) {
+			// variable dump
+			wrapper.innerHTML = "Loaded variables"
+			var para = document.createElement("p")
+			para.innerHTML = "updateInterval: " + this.config.updateInterval
+			para.innerHTML += "<br>retryDelay: " + this.config.retryDelay
+			para.innerHTML += "<br>owner: " + this.config.owner
+			para.innerHTML += "<br> locations: " + this.config.locations
+			para.innerHTML += "<br> devices: " + this.config.devices
+			para.innerHTML += "<br> host: " + this.config.host
+			para.innerHTML += "<br> port: " + this.config.port
+			para.innerHTML += "<br> ca file: " + this.config.cafile
+
+			wrapper.appendChild(para)
+		}
+		// ***** Disabled for testing purposes *****
+		/*
 		// If this.dataRequest is not empty
 		if (this.dataRequest) {
-			var wrapperDataRequest = document.createElement("div");
-			// check format https://jsonplaceholder.typicode.com/posts/1
-			wrapperDataRequest.innerHTML = this.dataRequest.quote.body;
+			// var wrapperDataRequest = document.createElement("div");
+			// wrapperDataRequest.innerHTML = this.dataRequest.title;
 
-			var labelDataRequest = document.createElement("label");
-			// Use translate function
-			//             this id defined in translations files
-			labelDataRequest.innerHTML = this.translate("TITLE");
+			// var labelDataRequest = document.createElement("label");
+			// // Use translate function
+			// //             this id defined in translations files
+			// labelDataRequest.innerHTML = this.translate("TITLE");
 
 
-			wrapper.appendChild(labelDataRequest);
-			wrapper.appendChild(wrapperDataRequest);
-		} else {
-		    console.log("Nothing in package.");
-			wrapper.innerHTML = this.translate("No data retrieved.");
-			wrapper.classList.add("bright", "light", "small");
-			return wrapper;
+			// wrapper.appendChild(labelDataRequest);
+			// wrapper.appendChild(wrapperDataRequest);
+			wrapper.appendChild(myclock1("weasleyClock"));
 		}
 
 		// Data from helper
@@ -124,11 +149,13 @@ Module.register("MMM-WeasleyClock", {
 
 			wrapper.appendChild(wrapperDataNotification);
 		}
-		return wrapper;
+
+		*/
+		return wrapper
 	},
 
 	getScripts: function() {
-		return [];
+		return ["analogclock.js"];
 	},
 
 	// getStyles: function () {
@@ -138,11 +165,11 @@ Module.register("MMM-WeasleyClock", {
 	// },
 
 
-
 	processData: function(data) {
 		console.log("Processing retrieved data.");
 		var self = this;
 		this.dataRequest = data;
+		log.console("Processing data retrieved from server.")
 		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
 		this.loaded = true;
 
@@ -160,4 +187,13 @@ Module.register("MMM-WeasleyClock", {
 			this.updateDom();
 		}
 	},
+
+	// override for testing purposes
+	notificationReceived: function(notification, payload, sender) {
+		switch(notification) {
+		  case "DOM_OBJECTS_CREATED":
+			console.log(this.name + " received notification " + notification);
+			break
+		}
+	  },
 });

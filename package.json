@@ -1,13 +1,16 @@
 {
   "name": "MMM-WeasleyClock",
-  "version": "1.2.0",
-  "description": "Module Base template for create new modules for MagicMirror",
+  "version": "0.1.0",
+  "description": "Magic Mirror Module for displaying Weasley Location Clock",
   "main": "MMM-WeasleyClock.js",
   "scripts": {
     "test": "./node_modules/grunt/bin/grunt"
   },
-  "author": "Rodrigo Ramírez Norambuena",
+  "author": "Brian Hepler",
   "license": "MIT",
+  "dependencies": {
+    "mqtt": "^2.18.8"
+  },
   "devDependencies": {
     "grunt": "latest",
     "grunt-eslint": "latest",
