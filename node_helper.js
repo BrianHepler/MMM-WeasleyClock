@@ -1,12 +1,14 @@
 /* Magic Mirror
  * Node Helper: MMM-WeasleyClock
  *
- * By Brian Hepler
- * MIT Licensed.
+ * By {{AUTHOR_NAME}}
+ * {{LICENSE}} Licensed.
  */
 
 var NodeHelper = require("node_helper");
-var mqtt = require("mosquitto-clients");
+var mqtt = require("mqtt");
+const fs = require("fs");
+const tls = require("tls");
 
 module.exports = NodeHelper.create({
 
@@ -28,7 +30,7 @@ module.exports = NodeHelper.create({
 			this.establishConnection(payload)
 		}
 
-		if (notification === "MMM-WeasleyClock-NOTIFICATION_START") {
+		if (notification === "MMM-WeasleyClock-START") {
 			console.log("Starting Weasley Clock message client. Notification:", notification, "payload: ", payload);
 			// Send notification
 			this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
@@ -36,14 +38,32 @@ module.exports = NodeHelper.create({
 	},
 
 	establishConnection: function(config) {
+		console.log("establishing mqtt connection");
+		var topic = payload.topic
 		var options = {
 			clientid: payload.clientid,
-			
+			rejectUnauthorized: false,
+			host: payload.host,
+			port: payload.port,
+			key: fs.readFileSync("mqtt.key"),
+			ca: fs.readFileSync("ca.crt"),
 		}
-		var url = payload.url
+		
 		var host = payload.host
-		var topic = payload.topic
-		var client = mqtt.connect(url, )
+		
+		console.debug(options);
+		const client = mqtt.connect(host, options)
+
+		// handle the events from the MQTT server
+		client.on("connect", ()=> {
+			console.log("MQTT connection established.")
+			client.subscribe("mirror/" + topic + "/#")
+		})
+		
+		client.on("mesage", (topic, message) => {
+			console.log ("message received in topic " + topic);
+			handleMessage(message, payload);
+		})
 	},
 
 	// Example function send notification test
