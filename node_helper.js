@@ -66,6 +66,18 @@ module.exports = NodeHelper.create({
 		})
 	},
 
+	handleMessage: function(config, message) {
+		console.log("Processing message:");
+		console.debug(message);
+
+
+		var payload = {
+			
+		}
+		// send update to mirror
+		this.sendNotification("MMM-WeasleyClock-MOVEMENT", payload);
+	},
+
 	// Example function send notification test
 	sendNotificationTest: function(payload) {
 		var host = payload.host;
