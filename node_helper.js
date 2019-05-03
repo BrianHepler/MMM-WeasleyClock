@@ -62,8 +62,10 @@ module.exports = NodeHelper.create({
 
 		client.on("message", (topic, message) => {
 			console.log ("message received in topic " + topic);
-			console.log (message.toString());
-			this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
+			var package = JSON.parse(message.toString());
+			console.log (package);
+			this.handleMessage(config, package);
+			// this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
 		})
 
 		client.on("error", function(error) {
@@ -76,12 +78,33 @@ module.exports = NodeHelper.create({
 		console.log("Processing message:");
 		console.debug(message);
 
+		if (message == null) {
+			console.error("Null value from MQTT server.");
+		}
+		console.debug("processing message type: " + message.type);
+		switch (message.type) {
+			case "waypoint": console.debug("Waypoint detected");
+			this.sendSocketNotification("MMM-WeasleyClock-WAYPOINT", message);
+			break;
 
+			case "location": console.debug("location detected");
+			this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
+			break;
+
+			case "transition": console.debug("transition event detected.");
+			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
+
+			case "lwt": console.debug("LWT event detected.");
+			this.sendSocketNotification("MMM-WeasleyClock-LOST", message);
+			break;
+
+			default: console.debug("Event received but not processed.");
+		}
 		var payload = {
 
 		}
 		// send update to mirror
-		this.sendNotification("MMM-WeasleyClock-MOVEMENT", payload);
+		this.sendSocketNotification("MMM-WeasleyClock-MOVEMENT", payload);
 	},
 
 	// Example function send notification test
