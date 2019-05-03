@@ -62,7 +62,7 @@ module.exports = NodeHelper.create({
 
 		client.on("message", (topic, message) => {
 			console.log ("message received in topic " + topic);
-			console.log (message);
+			console.log (message.toString());
 			this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
 		})
 
