@@ -11,13 +11,13 @@ Module.register("MMM-WeasleyClock", {
 	defaults: {
 		updateInterval: 60000,
 		retryDelay: 5000,
-		owner: "default",
+		uniqueId: "default",
 		debug: false,
 		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
 		devices: [
 			{ name: "Brian", id: "m1"},
-			{ name: "Cracked", id: "m2"},
-			{ name: "Deverina", id: "d1"}
+			{ name: "Wife", id: "w1"},
+			{ name: "Dementor", id: "d1"}
 		],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
@@ -35,7 +35,7 @@ Module.register("MMM-WeasleyClock", {
 		this.loaded = false;
 
 		// Schedule update timer.
-		this.getData();
+		// this.getData();
 		setInterval(function() {
 			self.updateDom();
 		}, this.config.updateInterval);
@@ -44,41 +44,6 @@ Module.register("MMM-WeasleyClock", {
 		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
-	/*
-	 * getData
-	 * function example return data and show it in the module wrapper
-	 * get a URL request
-	 *
-	 */
-	getData: function() {
-		var self = this;
-
-		var urlApi = self.config.host;
-		var retry = true;
-
-		var dataRequest = new XMLHttpRequest();
-		console.log("Calling API with '" + urlApi + "'");
-		dataRequest.open("GET", urlApi, true);
-		dataRequest.onreadystatechange = function() {
-			console.log(this.readyState);
-			if (this.readyState === 4) {
-				console.log(this.status);
-				if (this.status === 200) {
-					self.processData(JSON.parse(this.response));
-				} else if (this.status === 401) {
-					self.updateDom(self.config.animationSpeed);
-					Log.error(self.name, this.status);
-					retry = false;
-				} else {
-					Log.error(self.name, "Could not load data.");
-				}
-				if (retry) {
-					self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-				}
-			}
-		};
-		dataRequest.send();
-	},
 
 
 	/* scheduleUpdate()
@@ -95,7 +60,7 @@ Module.register("MMM-WeasleyClock", {
 		nextLoad = nextLoad ;
 		var self = this;
 		setTimeout(function() {
-			self.getData();
+			// self.getData();
 		}, nextLoad);
 	},
 
@@ -185,6 +150,9 @@ Module.register("MMM-WeasleyClock", {
 			// set dataNotification
 			this.dataNotification = payload;
 			this.updateDom();
+		} else {
+			Log.console("Notification received!");
+			Log.console(payload);
 		}
 	},
 
