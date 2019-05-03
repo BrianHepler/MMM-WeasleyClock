@@ -7,8 +7,6 @@
 
 var NodeHelper = require("node_helper");
 var mqtt = require("mqtt");
-const fs = require("fs");
-const tls = require("tls");
 
 module.exports = NodeHelper.create({
 
@@ -26,7 +24,8 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function(notification, payload) {
-		if (notification === "MMM-WeasleyClock-CONFIG") {
+		console.log("Weasley clock received notifications: " + notification)
+		if(notification === "MMM-WeasleyClock-CONFIG") {
 			this.establishConnection(payload)
 		}
 
@@ -37,34 +36,43 @@ module.exports = NodeHelper.create({
 		}
 	},
 
+
 	establishConnection: function(config) {
 		console.log("establishing mqtt connection");
-		var topic = payload.topic
+		// var topic = config.uniqueId
+		var topic = "owntracks/#"
+		var host = config.host
 		var options = {
-			clientid: payload.clientid,
+			clientId: "mirror-" + config.uniqueId,
 			rejectUnauthorized: false,
-			host: payload.host,
-			port: payload.port,
-			key: fs.readFileSync("mqtt.key"),
-			ca: fs.readFileSync("ca.crt"),
+			host: config.host,
+			port: config.port,
+			clean: true
 		}
-		
-		var host = payload.host
-		
+
+
 		console.debug(options);
-		const client = mqtt.connect(host, options)
+		const client = mqtt.connect("mqtt://" + host, options)
 
 		// handle the events from the MQTT server
 		client.on("connect", ()=> {
-			console.log("MQTT connection established.")
-			client.subscribe("mirror/" + topic + "/#")
+			console.log("MQTT connection established. Subscribing to " + topic)
+			client.subscribe(topic)
 		})
-		
-		client.on("mesage", (topic, message) => {
+
+		client.on("message", (topic, message) => {
 			console.log ("message received in topic " + topic);
-			handleMessage(message, payload);
+			console.log (message);
+			this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
+		})
+
+		client.on("error", function(error) {
+			console.error("Can't connect." + error);
+			process.exit(1)
 		})
 	},
+
+
 
 	// Example function send notification test
 	sendNotificationTest: function(payload) {
@@ -78,24 +86,12 @@ module.exports = NodeHelper.create({
 
 		var command = "mosquitto_sub";
 		command += " -h " + host + " --cafile '" + cafile + "' -p " + port + " -t '" + topic + "'";
-		
+
 		if (debug) { console.log("Connecting to MQTT broker with: " + command) }
+
 
 		// this.sendSocketNotification("MMM-WeasleyClock-NOTIFICATION_TEST", payload);
 	},
 
-	// this you can create extra routes for your module
-	extraRoutes: function() {
-		var self = this;
-		this.expressApp.get("/MMM-WeasleyClock/extra_route", function(req, res) {
-			// call another function
-			values = self.anotherFunction();
-			res.send(values);
-		});
-	},
 
-	// Test another function
-	anotherFunction: function() {
-		return {date: new Date()};
-	}
 });

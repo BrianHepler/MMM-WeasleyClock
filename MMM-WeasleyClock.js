@@ -21,7 +21,7 @@ Module.register("MMM-WeasleyClock", {
 		],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
-		cafile: "weasleymirror-ca.crt"
+		uniqueId: "notunique"
 	},
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
@@ -53,12 +53,12 @@ Module.register("MMM-WeasleyClock", {
 	getData: function() {
 		var self = this;
 
-		var urlApi = self.host;
+		var urlApi = self.config.host;
 		var retry = true;
 
 		var dataRequest = new XMLHttpRequest();
-		console.log("Calling API with '" + fullUrl + "'");
-		dataRequest.open("GET", fullUrl, true);
+		console.log("Calling API with '" + urlApi + "'");
+		dataRequest.open("GET", urlApi, true);
 		dataRequest.onreadystatechange = function() {
 			console.log(this.readyState);
 			if (this.readyState === 4) {
