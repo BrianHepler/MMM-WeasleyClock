@@ -24,7 +24,7 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function(notification, payload) {
-		console.log("Weasley clock received notifications: " + notification)
+		console.log("Weasley clock node helper received notifications: " + notification)
 		if(notification === "MMM-WeasleyClock-CONFIG") {
 			this.establishConnection(payload)
 		}
@@ -38,10 +38,12 @@ module.exports = NodeHelper.create({
 
 
 	establishConnection: function(config) {
-		console.log("establishing mqtt connection");
+		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
 		// var topic = config.uniqueId
-		var topic = "owntracks/#"
+		var topic = "owntracks/" + config.uniqueId;
 		var host = config.host
+		
+
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
 			rejectUnauthorized: false,
@@ -62,9 +64,8 @@ module.exports = NodeHelper.create({
 
 		client.on("message", (topic, message) => {
 			console.log ("message received in topic " + topic);
-			var package = JSON.parse(message.toString());
-			console.log (package);
-			this.handleMessage(config, package);
+			var msgObj = JSON.parse(message.toString());
+			this.handleMessage(config, msgObj);
 			// this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
 		})
 
@@ -81,24 +82,27 @@ module.exports = NodeHelper.create({
 		if (message == null) {
 			console.error("Null value from MQTT server.");
 		}
-		console.debug("processing message type: " + message.type);
-		switch (message.type) {
-			case "waypoint": console.debug("Waypoint detected");
+
+		// valid _type are: beacon, card, cmd, configuration, encrypted, location, lwt, steps, transition, waypoint, waypoints
+		console.debug("processing message type: " + message._type);
+		switch (message._type) {
+		case "waypoint": console.debug("New Waypoint detected");
 			this.sendSocketNotification("MMM-WeasleyClock-WAYPOINT", message);
 			break;
 
-			case "location": console.debug("location detected");
+		case "location": console.debug("location detected");
 			this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
 			break;
 
-			case "transition": console.debug("transition event detected.");
-			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
+		case "transition": console.debug("transition event detected.");
+			this.updateLocation(config, message, message.desc)
+			break;
 
-			case "lwt": console.debug("LWT event detected.");
+		case "lwt": console.debug("LWT event detected.");
 			this.sendSocketNotification("MMM-WeasleyClock-LOST", message);
 			break;
 
-			default: console.debug("Event received but not processed.");
+		default: console.debug("Event received but not processed.");
 		}
 		var payload = {
 
@@ -107,24 +111,36 @@ module.exports = NodeHelper.create({
 		this.sendSocketNotification("MMM-WeasleyClock-MOVEMENT", payload);
 	},
 
-	// Example function send notification test
-	sendNotificationTest: function(payload) {
-		var host = payload.host;
-		var port = payload.port;
-		var cafile = payload.cafile;
-		var debug = payload.debug;
-		var owner = payload.owner;
+	// Looks for velocity above zero. Send "traveling" message.
+	processLocation: function(config, message) {
 
-		var topic = "owntracks/" + owner + "/#";
-
-		var command = "mosquitto_sub";
-		command += " -h " + host + " --cafile '" + cafile + "' -p " + port + " -t '" + topic + "'";
-
-		if (debug) { console.log("Connecting to MQTT broker with: " + command) }
-
-
-		// this.sendSocketNotification("MMM-WeasleyClock-NOTIFICATION_TEST", payload);
 	},
 
+	// Looks for module location match with transition message.
+	processTransition: function(config, message) {
+
+	},
+
+	//  Last Will and Testiment messages get routed to "lost" status
+	processLWT: function (config, message) {
+		var options = { key : message.tid, location: "lost"};
+		sendSocketNotification("MMM-WeasleyMirror-UPDATE", options);
+	},
+
+	updateLocation: function(config, message, location) {
+		var locs = config.locations;
+		console.debug("Location list:");
+		console.debug(config.locations);
+		var match = locs.some(function(value,location) {
+			console.debug("Matching '" + value + "' against '" + location + "'");
+			return value.toLowerCase() == location.toLowerCase();
+		});
+		console.debug("Match found: " + match);
+
+		if (match) {
+			var options = { "key":message.tid, "location":location};
+			sendSocketNotification("MMM-WeasleyClock-UPDATE", options);
+		}
+	}
 
 });

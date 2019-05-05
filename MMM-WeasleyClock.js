@@ -14,11 +14,7 @@ Module.register("MMM-WeasleyClock", {
 		uniqueId: "default",
 		debug: false,
 		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
-		devices: [
-			{ name: "Brian", id: "m1"},
-			{ name: "Wife", id: "w1"},
-			{ name: "Dementor", id: "d1"}
-		],
+		people: ["Brian","Deverina","Dementor"],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
 		uniqueId: "notunique"
@@ -145,23 +141,15 @@ Module.register("MMM-WeasleyClock", {
 
 	// socketNotificationReceived from helper
 	socketNotificationReceived: function (notification, payload) {
-		console.log("Received notification from helper.");
+		console.log("Received notification '" + notification + "' from helper.");
 		if(notification === "MMM-WeasleyClock-NOTIFICATION_TEST") {
 			// set dataNotification
 			this.dataNotification = payload;
 			this.updateDom();
 		} else {
-			Log.console("Notification received!");
-			Log.console(payload);
+			console.debug(payload);
 		}
 	},
 
-	// override for testing purposes
-	notificationReceived: function(notification, payload, sender) {
-		switch(notification) {
-		  case "DOM_OBJECTS_CREATED":
-			console.log(this.name + " received notification " + notification);
-			break
-		}
-	  },
+
 });

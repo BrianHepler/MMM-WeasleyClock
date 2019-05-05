@@ -1,7 +1,7 @@
 # MMM-WeasleyClock
 Magic Mirror module for displaying results from OpenTracks
 
-* Installation *
+## Installation 
 Installation of the Magic Mirror module is similar to all other modules:
 ```
 cd /home/pi/MagicMirror/modules
@@ -11,27 +11,20 @@ npm install
 ```
 
 
-* Configuration Options * 
+## Configuration Options 
 ```
 {
-			module: "MMM-WeasleyClock",
-			position: "middle_center",
-			config: {
-				updateInterval: 1000 * 60 * 60,
-				uniqueId: "CowboysDude",
-				locations: {"School", "Work", "Jail", "Mortal Peril", "Bar", "Travelling", "Coding"},
-				peopleMap: [
-					{D1:"Brian"},
-					{W1:"Wife"}, 
-					{C1:"First Born"}, 
-					{O1:"Other Child"}
-					]
-				},
-			}
-		},
+    module: "MMM-WeasleyClock",
+        position: "middle_center",
+        config: {
+           uniqueId: "CowboysDude",
+           locations: {"School", "Work", "Jail", "Mortal Peril", "Bar", "Travelling", "Coding"},
+           people: ["Brian","Deverina","Dementor"],
+        },
+},
 ```
 
-** Configuring the Owntracks Mobile Client **
+## Configuring the OwnTracks Mobile Client 
 Owntracks is a free mobile app that will track your location and send updates to a MQTT server. Here is how you configure the mobile app to work with my MQTT server.
 
 * Download the Owntracks app from the Google Play Store (or possibly the iTunes store)
@@ -44,7 +37,22 @@ Owntracks is a free mobile app that will track your location and send updates to
 * Select Parameters. Make sure Clean Session is ON.
 * Go back to Preferences. Go to Reporting and turn on extended reporting.
 
+Just FYI - Owntracks mobile app will automatically publish to "owntracks/*uniqueId*/deviceId"
 
-Magic Mirror module for displaying results from OwnTracks (www.owntracks.org)
+## Setting up Regions in OwnTracks
+The way this works is that when your cell phone/table enters a defined region, it publishes a notification to the MQTT server. To get it to work, you have to define what regions correspond to what name.
 
-Example OwnTracks data: `{"_type":"location","acc":6,"alt":56,"batt":96,"conn":"w","lat":38.6873502,"lon":-77.4172194,"t":"u","tid":"m1","tst":1553036588,"vac":12,"vel":52}`
+Start with the list of locations that you defined in the `locations` parameter in the module configuration. "School", "Home", "Mortal Peril", etc. 
+* In the mobile application, click on the menu icon (the three horizontal lines) and then select "Regions". 
+* Click on the plus (+) icon to create a new region. 
+* Give your region one of the names in your location array. 
+* Click on the crosshairs icon in the upper right to go to the location selection screen Either use the search bar at the top to find an address, or drag the screen around to find the correct location.
+* Click on the "Use this location" button to finalize the location on the planet for your region.
+* Add a radius in the last field of the region. 250 meters is pretty good.
+* Click on the check mark icon at the top to save your region.
+
+Do this for each region that you wish to use. It is important to note that each region can be definited differently for each device.
+
+## Example Owntracks Data
+Example OwnTracks data: 
+`{"_type":"location","acc":6,"alt":56,"batt":96,"conn":"w","lat":38.6873502,"lon":-77.4172194,"t":"u","tid":"m1","tst":1553036588,"vac":12,"vel":52}`
