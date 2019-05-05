@@ -39,8 +39,7 @@ module.exports = NodeHelper.create({
 
 	establishConnection: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		// var topic = config.uniqueId
-		var topic = "owntracks/" + config.uniqueId;
+		var subTopic = "owntracks/" + config.uniqueId + "/";
 		var host = config.host
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
@@ -55,21 +54,20 @@ module.exports = NodeHelper.create({
 
 		// handle the events from the MQTT server
 		client.on("connect", ()=> {
-			console.log("MQTT connection established. Subscribing to " + topic);
+			console.log("MQTT connection established.");
 
-			client.subscribe(config.people.forEach(function(curVal, index) {
-				client.subscribe(topic + "/" + curVal)
-			}));
+			// Subscribe to each person's device updates
+			for (i=0; i< config.people.length; i++) {
+				console.log("Subscribing to " + subTopic + config.people[i]);
+				client.subscribe(subTopic + config.people[i]);
+			}
 
 			client.on("message", (topic, message) => {
 				console.log ("message received in topic " + topic);
 				var msgObj = JSON.parse(message.toString());
-				this.handleMessage(config, msgObj);
-				// this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
+				this.handleMessage(config, topic, msgObj);
 			});
 		});
-
-
 
 		client.on("error", function(error) {
 			console.error("Can't connect." + error);
@@ -77,7 +75,8 @@ module.exports = NodeHelper.create({
 		});
 	},
 
-	handleMessage: function(config, message) {
+	// Process the messages received by the client
+	handleMessage: function(config, topic, message) {
 		console.log("Processing message:");
 		console.debug(message);
 
