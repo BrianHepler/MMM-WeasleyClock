@@ -42,8 +42,6 @@ module.exports = NodeHelper.create({
 		// var topic = config.uniqueId
 		var topic = "owntracks/" + config.uniqueId;
 		var host = config.host
-		
-
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
 			rejectUnauthorized: false,
@@ -52,27 +50,31 @@ module.exports = NodeHelper.create({
 			clean: true
 		}
 
-
 		console.debug(options);
-		const client = mqtt.connect("mqtt://" + host, options)
+		const client = mqtt.connect("mqtt://" + host, options);
 
 		// handle the events from the MQTT server
 		client.on("connect", ()=> {
-			console.log("MQTT connection established. Subscribing to " + topic)
-			client.subscribe(topic)
-		})
+			console.log("MQTT connection established. Subscribing to " + topic);
 
-		client.on("message", (topic, message) => {
-			console.log ("message received in topic " + topic);
-			var msgObj = JSON.parse(message.toString());
-			this.handleMessage(config, msgObj);
-			// this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
-		})
+			client.subscribe(config.people.forEach(function(curVal, index) {
+				client.subscribe(topic + "/" + curVal)
+			}));
+
+			client.on("message", (topic, message) => {
+				console.log ("message received in topic " + topic);
+				var msgObj = JSON.parse(message.toString());
+				this.handleMessage(config, msgObj);
+				// this.sendSocketNotification("MMM-WeasleyClock-EVENT", message);
+			});
+		});
+
+
 
 		client.on("error", function(error) {
 			console.error("Can't connect." + error);
 			process.exit(1)
-		})
+		});
 	},
 
 	handleMessage: function(config, message) {
