@@ -57,6 +57,7 @@ Do this for each region that you wish to use. It is important to note that each 
 ## Example Owntracks Data
 ### Example OwnTracks Connection data
 This is from the MQTT server log files. This is what each mobile app subscribes to when you connect.
+** Note: This may need to be changed to add uniqueId to the base subscription path **
 ```
 2019-05-05T13:39:15: New client connected from 192.168.1.1 as CowboysDudeCowboy (p1, c1, k3600, u'cowboysdude').
 2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+
@@ -66,8 +67,32 @@ This is from the MQTT server log files. This is what each mobile app subscribes 
 2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/waypoint
 ```
 
-### Example OwnTrancks Transition data:
+### Example OwnTracks Transition data:
 This is what is sent when a mobile device enters a defined region.
+```
+ {
+    _type: "transition",
+    wtst: [fill in later],
+    lat: [fill in later],
+    lon: [fill in later],
+    tst: [fill in later]
+    acc: [later],
+    tid: B1,
+    event: "enter",  <== "leave" is also possible
+    desc: "Home",
+    t: "c"
+}
+```
+
+### Example Owntracks LWT message:
+This is what is sent when a mobile device loses connection with the server.
+```
+{ 
+    _type: 'lwt', 
+    tst: 1557362134 
+}
+```
+
 
 ### Example OwnTracks Location data: 
 This is what OwnTracks sends when you trigger an update or if it detects significant movement.
