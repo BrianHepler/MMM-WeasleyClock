@@ -1,12 +1,16 @@
 # Owntracks & MQTT Development Notes
 The module uses a MQTT server (mosquitto) to handle message traffic between the mobile devices and the mirror module. 
 
-It's *possible* to use the mirror module to configure the mobile devices. Specifically, we have to configure the mobile devices to drop the subscription to `owntracks/+/+` and replace it with a subscription to `owntracks/[uniqueId]/+/+`
+It's *possible* to use the mirror module to configure the mobile devices. Specifically, we have to configure the mobile devices to publish to `owntracks/uniqueId/person` and subscribe to `owntracks/uniqueId/+/+/#`. This is most likely going to have to be accomplished with the `cmd` topic in the MQTT broker. Mobile clients will have to allow remote commands.
+
+## Future Features
+* Enable region definitions in module config to push regions to devices
+* Dynamically load new locations based upon waypoint definition messages
 
 ## Example Owntracks Data
 ### Example OwnTracks Mobile Connection messages
 This is from the MQTT server log files. This is what each mobile app subscribes to when you connect.
-** Note: This may need to be changed to add uniqueId to the base subscription path **
+Note: This will need to be changed to add uniqueId to the base subscription path. Otherwise, everyone will see everyone else on their mobile device. Entertaining, but not terribly secure.
 ```
 2019-05-05T13:39:15: New client connected from 192.168.1.1 as CowboysDudeCowboy (p1, c1, k3600, u'cowboysdude').
 2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+
@@ -15,6 +19,7 @@ This is from the MQTT server log files. This is what each mobile app subscribes 
 2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/event
 2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/waypoint
 ```
+Subscription to `owntracks/+/+ 
 
 ### Example OwnTracks Transition data:
 This is what is sent when a mobile device enters a defined region.

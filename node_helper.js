@@ -58,7 +58,7 @@ module.exports = NodeHelper.create({
 
 			// Subscribe to each person's device updates
 			for (i=0; i< config.people.length; i++) {
-				console.log("Subscribing to " + subTopic + config.people[i]);
+				console.log("Subscribing to " + subTopic + config.people[i] + "/events");
 				client.subscribe(subTopic + config.people[i]);
 			}
 
