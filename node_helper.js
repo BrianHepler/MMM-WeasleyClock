@@ -7,6 +7,9 @@
 
 var NodeHelper = require("node_helper");
 var mqtt = require("mqtt");
+var subTopic = "";
+var pubTopic = "";
+var client;
 
 module.exports = NodeHelper.create({
 
@@ -34,12 +37,50 @@ module.exports = NodeHelper.create({
 			// Send notification
 			this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
 		}
+
+		if (notification === "MMM-WeasleyClock-UPDATECLIENTS") {
+			console.log("Updating clients.");
+			this.updateClients(payload);
+		}
 	},
 
 
 	establishConnection: function(config) {
+		var self = this
+		self.subTopic = "owntracks/" + config.uniqueId + "/";
+		self.pubTopic = "owntracks/" + config.uniqueId + "/";
+		self.client = self.getMQTTClient(config);
+
+		// handle the events from the MQTT server
+		self.client.on("connect", ()=> {
+			console.log("MQTT connection established.");
+
+			// Subscribe to each person's device updates
+			for (i=0; i< config.people.length; i++) {
+				console.log("Subscribing to " + self.subTopic + config.people[i] + "/+");
+				self.client.subscribe(self.subTopic + config.people[i] + "/#");
+			}
+
+			self.client.on("message", (topic, message) => {
+				console.log ("message received in topic " + topic);
+				var msgObj = JSON.parse(message.toString());
+				this.handleMessage(config, topic, msgObj);
+			});
+		});
+
+		self.client.on("error", function(error) {
+			console.error("Can't connect." + error);
+			process.exit(1)
+		});
+	},
+
+
+	/**
+	 * Creates an MQTT client object configured for a connection.
+	 * @param {Object} config 
+	 */
+	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		var subTopic = "owntracks/" + config.uniqueId + "/";
 		var host = config.host
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
@@ -50,29 +91,9 @@ module.exports = NodeHelper.create({
 		}
 
 		console.debug(options);
-		const client = mqtt.connect("mqtt://" + host, options);
+		client = mqtt.connect("mqtt://" + host, options);
 
-		// handle the events from the MQTT server
-		client.on("connect", ()=> {
-			console.log("MQTT connection established.");
-
-			// Subscribe to each person's device updates
-			for (i=0; i< config.people.length; i++) {
-				console.log("Subscribing to " + subTopic + config.people[i] + "/events");
-				client.subscribe(subTopic + config.people[i]);
-			}
-
-			client.on("message", (topic, message) => {
-				console.log ("message received in topic " + topic);
-				var msgObj = JSON.parse(message.toString());
-				this.handleMessage(config, topic, msgObj);
-			});
-		});
-
-		client.on("error", function(error) {
-			console.error("Can't connect." + error);
-			process.exit(1)
-		});
+		return client;
 	},
 
 	// Process the messages received by the client
@@ -83,6 +104,13 @@ module.exports = NodeHelper.create({
 		if (message == null) {
 			console.error("Null value from MQTT server.");
 		}
+
+		// extract person from path
+		var topicArray = topic.split("/");
+		var person = topicArray[topicArray.length - 1];
+		console.debug("Parsing message for '" + person + "'");
+
+		message.person = person;
 
 		// valid _type are: beacon, card, cmd, configuration, encrypted, location, lwt, steps, transition, waypoint, waypoints
 		console.debug("processing message type: " + message._type);
@@ -109,7 +137,7 @@ module.exports = NodeHelper.create({
 
 		}
 		// send update to mirror
-		this.sendSocketNotification("MMM-WeasleyClock-MOVEMENT", payload);
+		this.sendSocketNotification("MMM-WeasleyClock-UPDATE", payload);
 	},
 
 	// Looks for velocity above zero. Send "traveling" message.
@@ -142,6 +170,38 @@ module.exports = NodeHelper.create({
 			var options = { "key":message.tid, "location":location};
 			sendSocketNotification("MMM-WeasleyClock-UPDATE", options);
 		}
+	},
+
+
+	/**
+	 * Loops through the configured people and issues a remote configuration command. 
+	 * The command changes the default publish topic to exclude the device ID from
+	 * the topic.
+	 * @param {Object} config 
+	 */
+	updateClients: function(config) {
+		var people = config.people;
+		var numPeople = people.length;
+		var numDevices = this.idSet.length
+		
+		var options = {
+			_type: "cmd",
+			action: "setConfiguration",
+			configuration: {
+				_type: "configuration",
+				subTopicBase: pubTopic + "%u"
+			}
+		};
+		
+
+		for (i=0; i < numPeople; i++) {
+			console.log ("looping over " + numDevices + " devices.");
+			for (g=0; g < numDevices; g++) {
+				console.debug("Issuing command to " + pubTopic + "/" + people[i] + "/" +idSet[g]);
+				cmdClient.publish(pubTopic + "/" + people[i] + "/" + idSet[g], options);
+			}
+		}
+		cmdClient = null;
 	}
 
 });

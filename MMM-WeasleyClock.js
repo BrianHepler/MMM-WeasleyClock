@@ -19,46 +19,24 @@ Module.register("MMM-WeasleyClock", {
 		port: 8883,
 		uniqueId: "notunique"
 	},
+	
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	start: function() {
 		var self = this;
-		var dataRequest = null;
-		var dataNotification = null;
+		this.locationSet = new Set(this.config.locations);
 
 		//Flag for check if module is loaded
 		this.loaded = false;
 
-		// Schedule update timer.
-		// this.getData();
-		setInterval(function() {
-			self.updateDom();
-		}, this.config.updateInterval);
-
 		// send config to node helper
-		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
+		self.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
 
 
-	/* scheduleUpdate()
-	 * Schedule next update.
-	 *
-	 * argument delay number - Milliseconds before next update.
-	 *  If empty, this.config.updateInterval is used.
-	 */
-	scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval
-		if (typeof delay !== "undefined" && delay >= 0) {
-			nextLoad = delay;
-		}
-		nextLoad = nextLoad ;
-		var self = this;
-		setTimeout(function() {
-			// self.getData();
-		}, nextLoad);
-	},
+	
 
 	getDom: function() {
 		var self = this;
@@ -83,6 +61,17 @@ Module.register("MMM-WeasleyClock", {
 			para.innerHTML += "<br> ca file: " + this.config.cafile
 
 			wrapper.appendChild(para)
+		} else {
+			console.log("Set length is " + this.locationSet.length)
+			var table = document.createElement("table")
+			for (i=0; i<this.locationSet.length; i++) {
+				var tr = document.createElement("tr")
+				var td = document.createElement("td")
+				td.innerHTML = self.locationSet[i]
+				tr.appendChild(td)
+				table.appendChild(tr)
+			}
+			wrapper.appendChild(table)
 		}
 		// ***** Disabled for testing purposes *****
 		/*
@@ -139,10 +128,15 @@ Module.register("MMM-WeasleyClock", {
 		console.log("Processed.");
 	},
 
-	// socketNotificationReceived from helper
+	/**
+	 * Process notifications from the back end.
+	 * @param {String} notification Type of notification. Root: MMM-WeasleyClock-[type]
+	 * Valid types are: WAYPOINT, LOCATION, LOST, TRAVELING
+	 * @param {Object} payload The location & person information received from the MQTT server.
+	 */
 	socketNotificationReceived: function (notification, payload) {
 		console.log("Received notification '" + notification + "' from helper.");
-		if(notification === "MMM-WeasleyClock-NOTIFICATION_TEST") {
+		if(notification === "MMM-WeasleyClock-UPDATE") {
 			// set dataNotification
 			this.dataNotification = payload;
 			this.updateDom();
