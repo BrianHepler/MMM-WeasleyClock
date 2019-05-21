@@ -26,17 +26,18 @@ This is what is sent when a mobile device enters a defined region.
 ```
  {
     _type: "transition",
-    wtst: [fill in later],
-    lat: [fill in later],
-    lon: [fill in later],
-    tst: [fill in later]
-    acc: [later],
-    tid: B1,
+    wtst: 1556990699,       // Waypoint timestamp
+    lat: 39.9768083,        // latitude
+    lon: -83.1297876,       // longitude
+    tst: 1558112761,        // timestamp of event
+    acc: 10.0,              // accuracy of location fix
+    tid: W1,                
     event: "enter",  <== "leave" is also possible
     desc: "Home",
     t: "c"
 }
 ```
+
 
 ### Example Owntracks LWT message:
 This is what is sent when a mobile device loses connection with the server.
