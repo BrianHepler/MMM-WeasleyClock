@@ -24,14 +24,15 @@ Module.register("MMM-WeasleyClock", {
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	start: function() {
-		var self = this;
-		this.locationSet = new Set(this.config.locations);
-
 		//Flag for check if module is loaded
 		this.loaded = false;
+		
+		this.locationSet = new Set(this.config.locations);
+		this.locationMap = new Map();
+
 
 		// send config to node helper
-		self.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
+		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
 
@@ -39,7 +40,6 @@ Module.register("MMM-WeasleyClock", {
 	
 
 	getDom: function() {
-		var self = this;
 		console.log("Updating DOM")
 
 		// create element wrapper for show into the module
@@ -47,27 +47,27 @@ Module.register("MMM-WeasleyClock", {
 		wrapper.id = "weasleyClockID"
 		wrapper.className = "weasleyClock"
 
+		if (!this.loaded) {
+			wrapper.innerHTML = "Loading...";
+			wrapper.className = "loading medium";
+			return wrapper;
+		}
+
 		if (this.config.debug) {
 			// variable dump
-			wrapper.innerHTML = "Loaded variables"
-			var para = document.createElement("p")
-			para.innerHTML = "updateInterval: " + this.config.updateInterval
-			para.innerHTML += "<br>retryDelay: " + this.config.retryDelay
-			para.innerHTML += "<br>owner: " + this.config.owner
-			para.innerHTML += "<br> locations: " + this.config.locations
-			para.innerHTML += "<br> devices: " + this.config.devices
-			para.innerHTML += "<br> host: " + this.config.host
-			para.innerHTML += "<br> port: " + this.config.port
-			para.innerHTML += "<br> ca file: " + this.config.cafile
+			var mqttDiv = document.createElement("div")
+			mqttDiv.innerHTML = this.mqttVal.toString();
+			mqttDiv.className = "value bright large light";
+			wrapper.appendChild(mqttDiv);
 
-			wrapper.appendChild(para)
+			
 		} else {
 			console.log("Set length is " + this.locationSet.length)
 			var table = document.createElement("table")
 			for (i=0; i<this.locationSet.length; i++) {
 				var tr = document.createElement("tr")
 				var td = document.createElement("td")
-				td.innerHTML = self.locationSet[i]
+				td.innerHTML = this.locationSet[i]
 				tr.appendChild(td)
 				table.appendChild(tr)
 			}
@@ -115,35 +115,95 @@ Module.register("MMM-WeasleyClock", {
 	// },
 
 
-	processData: function(data) {
-		console.log("Processing retrieved data.");
-		var self = this;
-		this.dataRequest = data;
-		log.console("Processing data retrieved from server.")
-		if (this.loaded === false) { self.updateDom(self.config.animationSpeed) ; }
-		this.loaded = true;
+	/**
+	 * Update a person to traveling status
+	 * @param {String} name The name of one member of the person array
+	 * @param {Object} data The Owntracks message for evaluation
+	 */
+	processTraveling: function(name, data) {
+		if (checkIfNamed(name)) {
+			console.log(name + " is traveling.");
+		} else {
+			console.log(name + " is not one of us. Goodbye.");
+		}
+	},
 
-		// send notification to helper
-		this.sendSocketNotification("MMM-WeasleyClock-NOTIFICATION_TEST", data);
-		console.log("Processed.");
+	processLost: function(name) {
+		if (checkIfNamed(name)) {
+			console.log(name + " is now lost. :(");
+		} else {
+			console.log(name + " is not one of us. Shun the unbeliever!");
+		}
+	},
+
+	processLocation: function(name, data) {
+		console.debug("Processing location data for '" + name + "'");
+	},
+
+	/**
+	 * Processes the messages that Owntracks sends when a user enters or leaves a 
+	 * defined region. Can't guarantee that these happen every time.
+	 * @param {String} name Name of the person entering/leaving
+	 * @param {Object} data Message traffic
+	 */
+	processUpdate: function(name, data) {
+		console.debug("Processing location data for '" + name + "'");
+	},
+
+	/**
+	 * Checks to see if the submitted name is present in the person array.
+	 * @param {String} name  Name to check
+	 */
+	checkIfNamed: function(name) {
+		if (!name) {
+			return false;
+		} else if (this.person.length == 0) {
+			return false;
+		} else {
+			if (this.person.includes(name)) {
+				return true;
+			}
+		}
+		return false;
 	},
 
 	/**
 	 * Process notifications from the back end.
 	 * @param {String} notification Type of notification. Root: MMM-WeasleyClock-[type]
-	 * Valid types are: WAYPOINT, LOCATION, LOST, TRAVELING
+	 * Valid types are: WAYPOINT, LOCATION, LOST, TRAVELING, UPDATE
 	 * @param {Object} payload The location & person information received from the MQTT server.
+	 * @override
 	 */
 	socketNotificationReceived: function (notification, payload) {
 		console.log("Received notification '" + notification + "' from helper.");
-		if(notification === "MMM-WeasleyClock-UPDATE") {
-			// set dataNotification
-			this.dataNotification = payload;
-			this.updateDom();
-		} else {
-			console.debug(payload);
+		this.loaded = true;
+		this.mqttVal = payload;
+
+		if(notification === "MMM-WeasleyClock-TRAVELING") {
+			this.processTraveling(payload.person);
 		}
+
+		if(notification === "MMM-WeasleyClock-LOST") {
+			this.processLost(payload.person);
+		}
+
+		if(notification === "MMM-WeasleyClock-LOCATION") {
+			this.processLocation(payload.person, payload);
+		}
+
+		if(notification === "MMM-WeasleyClock-UPDATE") {
+			this.processUpdate(payload.person, payload);
+		}
+
+		this.updateDom();
 	},
+
+	roundValue: function(value) {
+		if (this.config.roundValue) {
+		  value =  parseFloat(value).toFixed(this.config.decimals);
+		}
+		return value;
+	  },
 
 
 });

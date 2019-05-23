@@ -46,38 +46,39 @@ module.exports = NodeHelper.create({
 
 
 	establishConnection: function(config) {
-		var self = this
-		self.subTopic = "owntracks/" + config.uniqueId + "/";
-		self.pubTopic = "owntracks/" + config.uniqueId + "/";
-		self.client = self.getMQTTClient(config);
-
-		// handle the events from the MQTT server
-		self.client.on("connect", ()=> {
-			console.log("MQTT connection established.");
-
-			// Subscribe to each person's device updates
-			for (i=0; i< config.people.length; i++) {
-				console.log("Subscribing to " + self.subTopic + config.people[i] + "/+");
-				self.client.subscribe(self.subTopic + config.people[i] + "/#");
-			}
-
-			self.client.on("message", (topic, message) => {
-				console.log ("message received in topic " + topic);
-				var msgObj = JSON.parse(message.toString());
-				this.handleMessage(config, topic, msgObj);
+		this.subTopic = "owntracks/" + config.uniqueId + "/";
+		this.pubTopic = "owntracks/" + config.uniqueId + "/";
+		if (this.client == null) {
+			this.client = this.getMQTTClient(config);
+			// handle the events from the MQTT server
+			this.client.on("connect", ()=> {
+				console.log("MQTT connection established.");
+	
+				// Subscribe to each person's device updates
+				for (i=0; i< config.people.length; i++) {
+					console.log("Subscribing to " + this.subTopic + config.people[i] + "/+");
+					this.client.subscribe(this.subTopic + config.people[i] + "/#");
+				}
+	
+				this.client.on("message", (topic, message) => {
+					console.log ("message received in topic " + topic);
+					var msgObj = JSON.parse(message.toString());
+					this.handleMessage(config, topic, msgObj);
+				});
 			});
-		});
+	
+			this.client.on("error", function(error) {
+				console.error("Can't connect." + error);
+				process.exit(1)
+			});
+		}
 
-		self.client.on("error", function(error) {
-			console.error("Can't connect." + error);
-			process.exit(1)
-		});
 	},
 
 
 	/**
 	 * Creates an MQTT client object configured for a connection.
-	 * @param {Object} config 
+	 * @param {Object} config The configuration object as modified by the user
 	 */
 	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
@@ -120,11 +121,13 @@ module.exports = NodeHelper.create({
 			break;
 
 		case "location": console.debug("location detected");
-			this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
+			// this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
+			this.processLocation(config, message);
 			break;
 
 		case "transition": console.debug("transition event detected.");
-			this.updateLocation(config, message, message.desc)
+			// this.updateLocation(config, message, message.desc)
+			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
 			break;
 
 		case "lwt": console.debug("LWT event detected.");
@@ -136,13 +139,23 @@ module.exports = NodeHelper.create({
 		var payload = {
 
 		}
-		// send update to mirror
-		this.sendSocketNotification("MMM-WeasleyClock-UPDATE", payload);
 	},
 
 	// Looks for velocity above zero. Send "traveling" message.
 	processLocation: function(config, message) {
-
+		var vel = message.vel;
+		console.debug("Traveling at " + vel);
+		
+		// check for region
+		if (message.inregions) {
+			// found one
+			console.debug(message.person + " is in region '" + message.inregions + "'");
+			this.sendSocketNotification("MMM-WeasleyMirror-UPDATE", message);
+		} else  if (vel > 10) {
+			console.debug("Mark as traveling");
+			this.sendSocketNotification("MMM-WeasleyMirror-TRAVELING", message);
+		}
+		
 	},
 
 	// Looks for module location match with transition message.
