@@ -1,0 +1,53 @@
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Brian', ... (168 bytes))
+owntracks/bonkers/Brian {"_type":"location","acc":15,"alt":65,"batt":100,"conn":"w","inregions":["home"],"lat":38.6884294,"lon":-77.4172002,"t":"p","tid":"Br","tst":1557483703,"vac":2,"vel":0}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (159 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":16,"alt":65,"batt":92,"conn":"w","inregions":["Home"],"lat":38.6884353,"lon":-77.4172007,"tid":"W1","tst":1557483907,"vac":2,"vel":0}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (167 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":16,"alt":65,"batt":92,"conn":"w","inregions":["Home"],"lat":38.6884353,"lon":-77.4172007,"t":"p","tid":"W1","tst":1557483929,"vac":2,"vel":0}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (32 bytes))
+owntracks/bonkers/Deverina {"_type":"lwt","tst":1557483907}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina/event', ... (152 bytes))
+owntracks/bonkers/Deverina/event {"_type":"transition","acc":10.0,"desc":"Home","event":"leave","lat":38.6895872,"lon":-77.4266579,"t":"l","tid":"W1","tst":1557484557,"wtst":1556990699}
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (140 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":10,"alt":55,"batt":94,"conn":"m","lat":38.6895872,"lon":-77.4266579,"tid":"W1","tst":1557484558,"vac":20,"vel":66}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (140 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":10,"alt":29,"batt":94,"conn":"m","lat":38.6903216,"lon":-77.4342644,"tid":"W1","tst":1557484606,"vac":20,"vel":61}
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (138 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":9,"alt":46,"batt":94,"conn":"m","lat":38.689187,"lon":-77.4403104,"tid":"W1","tst":1557484637,"vac":18,"vel":46}
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 sending PINGREQ
+Client m3 received PINGRESP
+Client m3 received PUBLISH (d0, q0, r0, m0, 'owntracks/bonkers/Deverina', ... (139 bytes))
+owntracks/bonkers/Deverina {"_type":"location","acc":12,"alt":42,"batt":95,"conn":"m","lat":38.7027344,"lon":-77.444075,"tid":"W1","tst":1557484738,"vac":24,"vel":93}
+
