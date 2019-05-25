@@ -40,16 +40,29 @@ Module.register("MMM-WeasleyClock", {
 	
 
 	getDom: function() {
-		console.log("Updating DOM")
 
 		// create element wrapper for show into the module
 		var wrapper = document.createElement("div")
 		wrapper.id = "weasleyClockID"
 		wrapper.className = "weasleyClock"
 
+		var people = this.config.people
+
 		if (!this.loaded) {
-			wrapper.innerHTML = "Loading...";
-			wrapper.className = "loading medium";
+			var locTable = document.createElement("table");
+			locTable.className = "table";
+			for (i=0; i<people.length; i++) {
+				var tr = document.createElement("tr")
+				var perTd = document.createElement("td")
+				var locTd = document.createElement("td")
+				perTd.innerHTML = people[i]
+				
+				tr.appendChild(perTd)
+				tr.appendChild(locTd)
+				locTable.appendChild(tr)
+			}
+
+			wrapper.appendChild(locTable);
 			return wrapper;
 		}
 
@@ -61,18 +74,7 @@ Module.register("MMM-WeasleyClock", {
 			wrapper.appendChild(mqttDiv);
 
 			
-		} else {
-			console.log("Set length is " + this.locationSet.length)
-			var table = document.createElement("table")
-			for (i=0; i<this.locationSet.length; i++) {
-				var tr = document.createElement("tr")
-				var td = document.createElement("td")
-				td.innerHTML = this.locationSet[i]
-				tr.appendChild(td)
-				table.appendChild(tr)
-			}
-			wrapper.appendChild(table)
-		}
+		
 		// ***** Disabled for testing purposes *****
 		/*
 		// If this.dataRequest is not empty
@@ -179,6 +181,7 @@ Module.register("MMM-WeasleyClock", {
 		this.loaded = true;
 		this.mqttVal = payload;
 
+		
 		if(notification === "MMM-WeasleyClock-TRAVELING") {
 			this.processTraveling(payload.person);
 		}
