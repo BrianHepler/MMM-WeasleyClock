@@ -47,18 +47,23 @@ Module.register("MMM-WeasleyClock", {
 		wrapper.className = "weasleyClock"
 
 		var people = this.config.people
+		var locations = this.config.locations
 
 		if (!this.loaded) {
 			var locTable = document.createElement("table");
 			locTable.className = "table";
-			for (i=0; i<people.length; i++) {
+			for (i=0; i<locations.length; i++) {
 				var tr = document.createElement("tr")
-				var perTd = document.createElement("td")
-				var locTd = document.createElement("td")
-				perTd.innerHTML = people[i]
+				var locationPopulationTd = document.createElement("td")
+				var locationTd = document.createElement("td")
+				locationTd.innerHTML = locations[i]
+				locationTd.id = "loc" + locations[i]
+				locationPopulationTd.id = "pop" + locations[i]
+				locationPopulationTd.innerHTML = people.toString();
+				locationPopulationTd.className = "hidden"
 				
-				tr.appendChild(perTd)
-				tr.appendChild(locTd)
+				tr.appendChild(locationTd)
+				tr.appendChild(locationPopulationTd)
 				locTable.appendChild(tr)
 			}
 
@@ -73,7 +78,7 @@ Module.register("MMM-WeasleyClock", {
 			mqttDiv.className = "value bright large light";
 			wrapper.appendChild(mqttDiv);
 
-			
+		}
 		
 		// ***** Disabled for testing purposes *****
 		/*
