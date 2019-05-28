@@ -166,7 +166,7 @@ module.exports = NodeHelper.create({
 	//  Last Will and Testiment messages get routed to "lost" status
 	processLWT: function (config, message) {
 		var options = { key : message.tid, location: "lost"};
-		sendSocketNotification("MMM-WeasleyMirror-UPDATE", options);
+		sendSocketNotification("MMM-WeasleyMirror-LOST", options);
 	},
 
 	updateLocation: function(config, message, location) {

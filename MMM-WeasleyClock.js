@@ -130,6 +130,8 @@ Module.register("MMM-WeasleyClock", {
 	processTraveling: function(name, data) {
 		if (checkIfNamed(name)) {
 			console.log(name + " is traveling.");
+			this.locationMap(name) = "Traveling";
+			// move name to traveling
 		} else {
 			console.log(name + " is not one of us. Goodbye.");
 		}
@@ -138,6 +140,8 @@ Module.register("MMM-WeasleyClock", {
 	processLost: function(name) {
 		if (checkIfNamed(name)) {
 			console.log(name + " is now lost. :(");
+			this.locationMap(name) = "Lost";
+			// move name to lost
 		} else {
 			console.log(name + " is not one of us. Shun the unbeliever!");
 		}
@@ -145,6 +149,12 @@ Module.register("MMM-WeasleyClock", {
 
 	processLocation: function(name, data) {
 		console.debug("Processing location data for '" + name + "'");
+		if (data.inRegion != null)
+		{
+			this.locationMap(name) = data.inRegion[0];
+			Log.info("Moving " + name + " to " + data.inRegion[0])
+			// move name to location (region0)
+		}
 	},
 
 	/**
