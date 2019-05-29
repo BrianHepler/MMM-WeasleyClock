@@ -17,7 +17,8 @@ Module.register("MMM-WeasleyClock", {
 		people: ["Brian","Deverina","Dementor"],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
-		uniqueId: "notunique"
+		uniqueId: "notunique",
+		clockStyle: "table",
 	},
 	
 
@@ -47,27 +48,36 @@ Module.register("MMM-WeasleyClock", {
 		wrapper.className = "weasleyClock"
 
 		var people = this.config.people
-		var locations = this.config.locations
 
 		if (!this.loaded) {
-			var locTable = document.createElement("table");
-			locTable.className = "table";
-			for (i=0; i<locations.length; i++) {
-				var tr = document.createElement("tr")
-				var locationPopulationTd = document.createElement("td")
-				var locationTd = document.createElement("td")
-				locationTd.innerHTML = locations[i]
-				locationTd.id = "loc" + locations[i]
-				locationPopulationTd.id = "pop" + locations[i]
-				locationPopulationTd.innerHTML = people.toString();
-				locationPopulationTd.className = "hidden"
-				
-				tr.appendChild(locationTd)
-				tr.appendChild(locationPopulationTd)
-				locTable.appendChild(tr)
-			}
+			if (this.config.clockStyle == "table") {
 
-			wrapper.appendChild(locTable);
+				var locTable = document.createElement("table");
+				locTable.className = "table";
+
+				for (i=0; i<people.length; i++) {
+					var tr = document.createElement("tr")
+					var personTd = document.createElement("td")
+					var personLocationTd = document.createElement("td")
+					
+					personTd.innerHTML = people[i]
+					personTd.id = "perLbl-" + people[i]
+					personTd.className = "person"
+					
+					personLocationTd.innerHTML = "Lost"
+					personLocationTd.id = "perLoc-" + people[i];
+					personLocationTd.className = "location"
+
+
+					tr.appendChild(personTd)
+					tr.appendChild(personLocationTd)
+					locTable.appendChild(tr)
+				}
+				
+				wrapper.appendChild(locTable);
+			} else if (this.config.clockStyle == "clock") {
+				// build the clock
+			}
 			return wrapper;
 		}
 
@@ -111,15 +121,17 @@ Module.register("MMM-WeasleyClock", {
 		return wrapper
 	},
 
-	getScripts: function() {
-		return ["analogclock.js"];
-	},
-
-	// getStyles: function () {
+	// getScripts: function() {
 	// 	return [
-	// 		"MMM-WeasleyClock.css",
+			
 	// 	];
 	// },
+
+	getStyles: function () {
+		return [
+			"MMM-WeasleyClock.css",
+		];
+	},
 
 
 	/**
@@ -164,7 +176,9 @@ Module.register("MMM-WeasleyClock", {
 	 * @param {Object} data Message traffic
 	 */
 	processUpdate: function(name, data) {
-		console.debug("Processing location data for '" + name + "'");
+		console.log("Processing location data for '" + name + "'");
+		
+
 	},
 
 	/**
@@ -213,7 +227,7 @@ Module.register("MMM-WeasleyClock", {
 			this.processUpdate(payload.person, payload);
 		}
 
-		this.updateDom();
+		// this.updateDom();
 	},
 
 	roundValue: function(value) {

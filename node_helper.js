@@ -144,16 +144,16 @@ module.exports = NodeHelper.create({
 	// Looks for velocity above zero. Send "traveling" message.
 	processLocation: function(config, message) {
 		var vel = message.vel;
-		console.debug("Traveling at " + vel);
+		console.log("Traveling at " + vel);
 		
 		// check for region
 		if (message.inregions) {
 			// found one
-			console.debug(message.person + " is in region '" + message.inregions + "'");
-			this.sendSocketNotification("MMM-WeasleyMirror-UPDATE", message);
+			console.log(message.person + " is in region '" + message.inregions + "'");
+			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
 		} else  if (vel > 10) {
-			console.debug("Mark as traveling");
-			this.sendSocketNotification("MMM-WeasleyMirror-TRAVELING", message);
+			console.log("Mark as traveling");
+			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
 		
 	},
