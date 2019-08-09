@@ -121,7 +121,7 @@ module.exports = NodeHelper.create({
 			break;
 
 		case "location": console.debug("location detected");
-			// this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
+			this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
 			this.processLocation(config, message);
 			break;
 

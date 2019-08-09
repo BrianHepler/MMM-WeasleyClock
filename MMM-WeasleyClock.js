@@ -31,6 +31,8 @@ Module.register("MMM-WeasleyClock", {
 		this.locationSet = new Set(this.config.locations);
 		this.locationMap = new Map();
 
+		for {n=0; n<locationSet.length; n++}
+
 
 		// send config to node helper
 		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
@@ -161,11 +163,14 @@ Module.register("MMM-WeasleyClock", {
 
 	processLocation: function(name, data) {
 		console.debug("Processing location data for '" + name + "'");
-		if (data.inRegion != null)
+		if (data.inregions != null)
 		{
-			this.locationMap(name) = data.inRegion[0];
-			Log.info("Moving " + name + " to " + data.inRegion[0])
+			this.locationMap(name) = data.inregions[0];
+			Log.info("Moving " + name + " to " + data.inregions[0])
 			// move name to location (region0)
+		} else {
+			Log.info("Region " + data.inregions[0] + " was not found in location list.");
+
 		}
 	},
 
@@ -176,8 +181,8 @@ Module.register("MMM-WeasleyClock", {
 	 * @param {Object} data Message traffic
 	 */
 	processUpdate: function(name, data) {
-		console.log("Processing location data for '" + name + "'");
-		
+		console.log("Processing location update for '" + name + "'");
+		console.debug("Regions: " + data.inregions);
 
 	},
 
