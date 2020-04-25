@@ -9,9 +9,7 @@
   "author": "Brian Hepler",
   "license": "MIT",
   "dependencies": {
-    "mqtt": "^2.18.8",
-    "minimist": ">=1.2.3",
-    "acorn": ">=7.1.1"
+    "mqtt": "^2.18.8"
   },
   "devDependencies": {
     "grunt": "latest",
@@ -20,10 +18,8 @@
     "grunt-markdownlint": "^1.0.13",
     "grunt-stylelint": "latest",
     "grunt-yamllint": "^0.3.0",
-    "stylelint": "^8.3.0",
+    "stylelint": "13.3.2",
     "stylelint-config-standard": "latest",
-    "time-grunt": "latest",
-    "minimist": ">=1.2.3",
-    "acorn": ">=7.1.1"
+    "time-grunt": "latest"
   }
 }
