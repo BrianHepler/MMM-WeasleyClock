@@ -43,7 +43,7 @@ Module.register("MMM-WeasleyClock", {
 		// }
 
 		// send config to node helper
-		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
+		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config);
 	},
 
 	getDom: function() {
@@ -59,14 +59,23 @@ Module.register("MMM-WeasleyClock", {
 			var locTable = document.createElement("table");
 			locTable.className = "table";
 
+			var thr = document.createElement("tr");
+			var thp = document.createElement("th");
+			var thl = document.createElement("th");
+			thp.innerHTML = "<u>Who</u>";
+			thl.innerHTML = "<u>Where</u>";
+			thr.appendChild(thp);
+			thr.appendChild(thl);
+			locTable.appendChild(thr);
+
 			for (i=0; i<people.length; i++) {
-				var tr = document.createElement("tr")
-				var personTd = document.createElement("td")
-				var personLocationTd = document.createElement("td")
+				var tr = document.createElement("tr");
+				var personTd = document.createElement("td");
+				var personLocationTd = document.createElement("td");
 
 				personTd.innerHTML = people[i]
-				personTd.id = "perLbl-" + people[i]
-				personTd.className = "person"
+				personTd.id = "perLbl-" + people[i];
+				personTd.className = "person";
 
 				var loc = this.locationMap.get(people[i]);
 				if (loc != null) { personLocationTd.innerHTML = loc; }
@@ -74,9 +83,9 @@ Module.register("MMM-WeasleyClock", {
 				personLocationTd.id = "perLoc-" + people[i];
 				personLocationTd.className = "location";
 
-				tr.appendChild(personTd)
-				tr.appendChild(personLocationTd)
-				locTable.appendChild(tr)
+				tr.appendChild(personTd);
+				tr.appendChild(personLocationTd);
+				locTable.appendChild(tr);
 			}
 
 			wrapper.appendChild(locTable);
@@ -84,46 +93,7 @@ Module.register("MMM-WeasleyClock", {
 			// build the clock
 		}
 		return wrapper;
-		// }
 
-		// if (this.config.debug) {
-		// 	// variable dump
-		// 	var mqttDiv = document.createElement("div")
-		// 	mqttDiv.innerHTML = this.mqttVal.toString();
-		// 	mqttDiv.className = "value bright large light";
-		// 	wrapper.appendChild(mqttDiv);
-
-		// }
-		
-		// ***** Disabled for testing purposes *****
-		/*
-		// If this.dataRequest is not empty
-		if (this.dataRequest) {
-			// var wrapperDataRequest = document.createElement("div");
-			// wrapperDataRequest.innerHTML = this.dataRequest.title;
-
-			// var labelDataRequest = document.createElement("label");
-			// // Use translate function
-			// //             this id defined in translations files
-			// labelDataRequest.innerHTML = this.translate("TITLE");
-
-
-			// wrapper.appendChild(labelDataRequest);
-			// wrapper.appendChild(wrapperDataRequest);
-			wrapper.appendChild(myclock1("weasleyClock"));
-		}
-
-		// Data from helper
-		if (this.dataNotification) {
-			var wrapperDataNotification = document.createElement("div");
-			// translations  + datanotification
-			wrapperDataNotification.innerHTML =  this.translate("UPDATE") + ": " + this.dataNotification.date;
-
-			wrapper.appendChild(wrapperDataNotification);
-		}
-
-		*/
-		return wrapper;
 	},
 
 	getStyles: function () {
@@ -142,50 +112,60 @@ Module.register("MMM-WeasleyClock", {
 			console.log(name + " is traveling.");
 			this.locationMap.set(name,"Traveling");
 			this.updateDom();
-		} else if (this.config.debug) { console.log(name + " is not one of us. Goodbye."); }
+		} else if (this.config.debug) {
+			console.log(name + " is not one of us. Goodbye.");
 		}
+
 	},
 
+	/**
+	 * Update a person to LOST status.
+	 * @param {*} name Name of the tracked person
+	 */
 	processLost: function(name) {
 		if (this.locationMap.get(name) != null) {
 			if (this.config.debug) { console.log(name + " is now lost. :("); }
 			this.locationMap.set(name,"Lost");
 			this.updateDom();
-		} else if (this.config.debug) { console.log(name + " is not one of us. Shun the unbeliever!"); }
+		} else if (this.config.debug) {
+			console.log(name + " is not one of us. Shun the unbeliever!");
 		}
 	},
 
 	/**
-	 * Processes the messages that Owntracks sends when a user enters or leaves a 
+	 * Processes the messages that Owntracks sends when a user enters or leaves a
 	 * defined region. Can't guarantee that these happen every time.
 	 * Note: You can be in multiple regions. We're only evaluating the first one.
 	 * @param {String} name Name of the person entering/leaving
 	 * @param {Object} data Message traffic
 	 */
 	processUpdate: function(name, data) {
-		console.log("Processing location update for '" + name + "'");
-		console.log("Regions: " + data.inregions);
+		if (this.config.debug) {
+			console.log("Processing location update for '" + name + "'");
+			console.log("Regions: " + data.inregions);
+		}
 		var loc = data.inregions[0];
 
 		if (this.locationSet.has(loc)) {
 			if (this.config.debug) { console.log("Found! Updating location map.") };
 			this.locationMap.set(name,loc);
 			this.updateDom();
-		} else {
+		} else if (this.config.debug) {
 			console.log("Location '" + loc + "' not found.");
 		}
 	},
 
-
 	/**
 	 * Process notifications from the back end.
 	 * @param {String} notification Type of notification. Root: MMM-WeasleyClock-[type]
-	 * Valid types are: WAYPOINT, LOCATION, LOST, TRAVELING, UPDATE
+	 * Valid types are: WAYPOINT, LOST, TRAVELING, UPDATE
 	 * @param {Object} payload The location & person information received from the MQTT server.
 	 * @override
 	 */
 	socketNotificationReceived: function (notification, payload) {
-		console.log("Received notification '" + notification + "' from helper.");
+		if (this.config.debug) {
+			console.log("Received notification '" + notification + "' from Weasley helper.");
+		}
 		this.loaded = true;
 		this.mqttVal = payload;
 
@@ -197,14 +177,13 @@ Module.register("MMM-WeasleyClock", {
 			this.processLost(payload.person);
 		}
 
-		// if(notification === "MMM-WeasleyClock-LOCATION") {
-		// 	this.processLocation(payload.person, payload);
-		// }
-
 		if(notification === "MMM-WeasleyClock-UPDATE") {
 			this.processUpdate(payload.person, payload);
 		}
 
+		if (notification === "MMM-WeasleyClock-WAYPOINT") {
+			this.processNewLocation(payload);
+		}
 		// this.updateDom();
 	},
 
