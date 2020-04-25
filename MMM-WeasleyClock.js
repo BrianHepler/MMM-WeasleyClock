@@ -20,77 +20,80 @@ Module.register("MMM-WeasleyClock", {
 		uniqueId: "notunique",
 		clockStyle: "table",
 	},
-	
 
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	start: function() {
+		Log.info("Starting module: " + this.name);
 		//Flag for check if module is loaded
 		this.loaded = false;
-		
+		var people = this.config.people;
+
 		this.locationSet = new Set(this.config.locations);
 		this.locationMap = new Map();
 
-		for {n=0; n<locationSet.length; n++}
+		for (n=0; n<people.length; n++) {
+			console.log("Processing person: " + people[n]);
+			this.locationMap.set(people[n], "Lost");
+		}
 
+		// for (let loc of this.locationSet.values()) {
+		// 	console.log("Processing location " + loc );
+
+		// }
 
 		// send config to node helper
 		this.sendSocketNotification("MMM-WeasleyClock-CONFIG", this.config)
 	},
 
-
-
-	
-
 	getDom: function() {
 
-		// create element wrapper for show into the module
-		var wrapper = document.createElement("div")
-		wrapper.id = "weasleyClockID"
-		wrapper.className = "weasleyClock"
+		var wrapper = document.createElement("div");
+		wrapper.id = "weasleyClockID";
+		wrapper.className = "weasleyClock";
 
-		var people = this.config.people
+		var people = this.config.people;
 
-		if (!this.loaded) {
-			if (this.config.clockStyle == "table") {
+		if (this.config.clockStyle == "table") {
 
-				var locTable = document.createElement("table");
-				locTable.className = "table";
+			var locTable = document.createElement("table");
+			locTable.className = "table";
 
-				for (i=0; i<people.length; i++) {
-					var tr = document.createElement("tr")
-					var personTd = document.createElement("td")
-					var personLocationTd = document.createElement("td")
-					
-					personTd.innerHTML = people[i]
-					personTd.id = "perLbl-" + people[i]
-					personTd.className = "person"
-					
-					personLocationTd.innerHTML = "Lost"
-					personLocationTd.id = "perLoc-" + people[i];
-					personLocationTd.className = "location"
+			for (i=0; i<people.length; i++) {
+				var tr = document.createElement("tr")
+				var personTd = document.createElement("td")
+				var personLocationTd = document.createElement("td")
 
+				personTd.innerHTML = people[i]
+				personTd.id = "perLbl-" + people[i]
+				personTd.className = "person"
 
-					tr.appendChild(personTd)
-					tr.appendChild(personLocationTd)
-					locTable.appendChild(tr)
-				}
-				
-				wrapper.appendChild(locTable);
-			} else if (this.config.clockStyle == "clock") {
-				// build the clock
+				var loc = this.locationMap.get(people[i]);
+				if (loc != null) { personLocationTd.innerHTML = loc; }
+				else { personLocationTd.innerHTML = "Lost"; }
+				personLocationTd.id = "perLoc-" + people[i];
+				personLocationTd.className = "location";
+
+				tr.appendChild(personTd)
+				tr.appendChild(personLocationTd)
+				locTable.appendChild(tr)
 			}
-			return wrapper;
-		}
 
-		if (this.config.debug) {
-			// variable dump
-			var mqttDiv = document.createElement("div")
-			mqttDiv.innerHTML = this.mqttVal.toString();
-			mqttDiv.className = "value bright large light";
-			wrapper.appendChild(mqttDiv);
-
+			wrapper.appendChild(locTable);
+		} else if (this.config.clockStyle == "clock") {
+			// build the clock
 		}
+		return wrapper;
+		// }
+
+		// if (this.config.debug) {
+		// 	// variable dump
+		// 	var mqttDiv = document.createElement("div")
+		// 	mqttDiv.innerHTML = this.mqttVal.toString();
+		// 	mqttDiv.className = "value bright large light";
+		// 	wrapper.appendChild(mqttDiv);
+
+		// }
 		
 		// ***** Disabled for testing purposes *****
 		/*
@@ -120,14 +123,8 @@ Module.register("MMM-WeasleyClock", {
 		}
 
 		*/
-		return wrapper
+		return wrapper;
 	},
-
-	// getScripts: function() {
-	// 	return [
-			
-	// 	];
-	// },
 
 	getStyles: function () {
 		return [
@@ -135,73 +132,50 @@ Module.register("MMM-WeasleyClock", {
 		];
 	},
 
-
 	/**
 	 * Update a person to traveling status
 	 * @param {String} name The name of one member of the person array
 	 * @param {Object} data The Owntracks message for evaluation
 	 */
 	processTraveling: function(name, data) {
-		if (checkIfNamed(name)) {
+		if (this.locationMap.get(name) != null) {
 			console.log(name + " is traveling.");
-			this.locationMap(name) = "Traveling";
-			// move name to traveling
-		} else {
-			console.log(name + " is not one of us. Goodbye.");
+			this.locationMap.set(name,"Traveling");
+			this.updateDom();
+		} else if (this.config.debug) { console.log(name + " is not one of us. Goodbye."); }
 		}
 	},
 
 	processLost: function(name) {
-		if (checkIfNamed(name)) {
-			console.log(name + " is now lost. :(");
-			this.locationMap(name) = "Lost";
-			// move name to lost
-		} else {
-			console.log(name + " is not one of us. Shun the unbeliever!");
-		}
-	},
-
-	processLocation: function(name, data) {
-		console.debug("Processing location data for '" + name + "'");
-		if (data.inregions != null)
-		{
-			this.locationMap(name) = data.inregions[0];
-			Log.info("Moving " + name + " to " + data.inregions[0])
-			// move name to location (region0)
-		} else {
-			Log.info("Region " + data.inregions[0] + " was not found in location list.");
-
+		if (this.locationMap.get(name) != null) {
+			if (this.config.debug) { console.log(name + " is now lost. :("); }
+			this.locationMap.set(name,"Lost");
+			this.updateDom();
+		} else if (this.config.debug) { console.log(name + " is not one of us. Shun the unbeliever!"); }
 		}
 	},
 
 	/**
 	 * Processes the messages that Owntracks sends when a user enters or leaves a 
 	 * defined region. Can't guarantee that these happen every time.
+	 * Note: You can be in multiple regions. We're only evaluating the first one.
 	 * @param {String} name Name of the person entering/leaving
 	 * @param {Object} data Message traffic
 	 */
 	processUpdate: function(name, data) {
 		console.log("Processing location update for '" + name + "'");
-		console.debug("Regions: " + data.inregions);
+		console.log("Regions: " + data.inregions);
+		var loc = data.inregions[0];
 
-	},
-
-	/**
-	 * Checks to see if the submitted name is present in the person array.
-	 * @param {String} name  Name to check
-	 */
-	checkIfNamed: function(name) {
-		if (!name) {
-			return false;
-		} else if (this.person.length == 0) {
-			return false;
+		if (this.locationSet.has(loc)) {
+			if (this.config.debug) { console.log("Found! Updating location map.") };
+			this.locationMap.set(name,loc);
+			this.updateDom();
 		} else {
-			if (this.person.includes(name)) {
-				return true;
-			}
+			console.log("Location '" + loc + "' not found.");
 		}
-		return false;
 	},
+
 
 	/**
 	 * Process notifications from the back end.
@@ -215,7 +189,6 @@ Module.register("MMM-WeasleyClock", {
 		this.loaded = true;
 		this.mqttVal = payload;
 
-		
 		if(notification === "MMM-WeasleyClock-TRAVELING") {
 			this.processTraveling(payload.person);
 		}
@@ -224,9 +197,9 @@ Module.register("MMM-WeasleyClock", {
 			this.processLost(payload.person);
 		}
 
-		if(notification === "MMM-WeasleyClock-LOCATION") {
-			this.processLocation(payload.person, payload);
-		}
+		// if(notification === "MMM-WeasleyClock-LOCATION") {
+		// 	this.processLocation(payload.person, payload);
+		// }
 
 		if(notification === "MMM-WeasleyClock-UPDATE") {
 			this.processUpdate(payload.person, payload);
@@ -237,10 +210,9 @@ Module.register("MMM-WeasleyClock", {
 
 	roundValue: function(value) {
 		if (this.config.roundValue) {
-		  value =  parseFloat(value).toFixed(this.config.decimals);
+		  value = parseFloat(value).toFixed(this.config.decimals);
 		}
 		return value;
 	  },
-
 
 });

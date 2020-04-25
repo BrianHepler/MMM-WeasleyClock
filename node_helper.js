@@ -1,3 +1,4 @@
+/* eslint-disable no-trailing-spaces */
 /* Magic Mirror
  * Node Helper: MMM-WeasleyClock
  *
@@ -18,8 +19,6 @@ module.exports = NodeHelper.create({
 		// var client = new Messaging.Client()
 	},
 
-	// Override socketNotificationReceived method.
-
 	/* socketNotificationReceived(notification, payload)
 	 * This method is called when a socket notification arrives.
 	 *
@@ -29,7 +28,7 @@ module.exports = NodeHelper.create({
 	socketNotificationReceived: function(notification, payload) {
 		console.log("Weasley clock node helper received notifications: " + notification)
 		if(notification === "MMM-WeasleyClock-CONFIG") {
-			this.establishConnection(payload)
+			this.establishConnection(payload);
 		}
 
 		if (notification === "MMM-WeasleyClock-START") {
@@ -44,10 +43,8 @@ module.exports = NodeHelper.create({
 		}
 	},
 
-
 	establishConnection: function(config) {
 		this.subTopic = "owntracks/" + config.uniqueId + "/";
-		this.pubTopic = "owntracks/" + config.uniqueId + "/";
 		if (this.client == null) {
 			this.client = this.getMQTTClient(config);
 			// handle the events from the MQTT server
@@ -69,12 +66,11 @@ module.exports = NodeHelper.create({
 	
 			this.client.on("error", function(error) {
 				console.error("Can't connect." + error);
-				process.exit(1)
+				process.exit(1);
 			});
 		}
 
 	},
-
 
 	/**
 	 * Creates an MQTT client object configured for a connection.
@@ -82,14 +78,14 @@ module.exports = NodeHelper.create({
 	 */
 	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		var host = config.host
+		var host = config.host;
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
 			clean: true
-		}
+		};
 
 		console.debug(options);
 		client = mqtt.connect("mqtt://" + host, options);
@@ -121,70 +117,62 @@ module.exports = NodeHelper.create({
 			break;
 
 		case "location": console.debug("location detected");
-			this.sendSocketNotification("MMM-WeasleyClock-LOCATION", message);
 			this.processLocation(config, message);
 			break;
 
 		case "transition": console.debug("transition event detected.");
-			// this.updateLocation(config, message, message.desc)
-			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
+			this.processTransition(config, message);
 			break;
 
 		case "lwt": console.debug("LWT event detected.");
+			// var options = { key : message.tid, location: "lost"};
+			// sendSocketNotification("MMM-WeasleyMirror-LOST", options);
 			this.sendSocketNotification("MMM-WeasleyClock-LOST", message);
 			break;
 
 		default: console.debug("Event received but not processed.");
 		}
-		var payload = {
-
-		}
+		
 	},
 
-	// Looks for velocity above zero. Send "traveling" message.
+	/**
+	 * Processes the location messages. Looks for a high velocity and a location.
+	 * Currently, location takes precedence over velocity, so if you're driving
+	 * past a location, it will mark you as in that location instead of traveling.
+	 * @param {*} config 
+	 * @param {*} message 
+	 */
 	processLocation: function(config, message) {
 		var vel = message.vel;
 		console.log("Traveling at " + vel);
 		
 		// check for region
 		if (message.inregions) {
-			// found one
 			console.log(message.person + " is in region '" + message.inregions + "'");
 			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
-		} else  if (vel > 10) {
-			console.log("Mark as traveling");
+		} else if (vel > 10) {
+			console.log("Mark " + message.person + " as traveling");
 			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
 		
 	},
 
 	// Looks for module location match with transition message.
+	// Note: transition messages put regions in the "desc" field.
 	processTransition: function(config, message) {
+		var event = message.event;
 
-	},
-
-	//  Last Will and Testiment messages get routed to "lost" status
-	processLWT: function (config, message) {
-		var options = { key : message.tid, location: "lost"};
-		sendSocketNotification("MMM-WeasleyMirror-LOST", options);
-	},
-
-	updateLocation: function(config, message, location) {
-		var locs = config.locations;
-		console.debug("Location list:");
-		console.debug(config.locations);
-		var match = locs.some(function(value,location) {
-			console.debug("Matching '" + value + "' against '" + location + "'");
-			return value.toLowerCase() == location.toLowerCase();
-		});
-		console.debug("Match found: " + match);
-
-		if (match) {
-			var options = { "key":message.tid, "location":location};
-			sendSocketNotification("MMM-WeasleyClock-UPDATE", options);
+		if (event == "enter") {
+			console.log(message.person + " has entered region(s) '" + message.desc +"'");
+			message.inregions = new Array(message.desc);
+			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
+		} else {
+			console.log(message.person + " has just left '" + message.inregions + "'");
+			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
-	},
 
+		//TODO: add notification noise to signal change in state.
+	},
 
 	/**
 	 * Loops through the configured people and issues a remote configuration command. 
@@ -195,7 +183,7 @@ module.exports = NodeHelper.create({
 	updateClients: function(config) {
 		var people = config.people;
 		var numPeople = people.length;
-		var numDevices = this.idSet.length
+		var numDevices = this.idSet.length;
 		
 		var options = {
 			_type: "cmd",
@@ -206,7 +194,6 @@ module.exports = NodeHelper.create({
 			}
 		};
 		
-
 		for (i=0; i < numPeople; i++) {
 			console.log ("looping over " + numDevices + " devices.");
 			for (g=0; g < numDevices; g++) {
