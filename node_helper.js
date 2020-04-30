@@ -26,7 +26,7 @@ module.exports = NodeHelper.create({
 	 * argument payload mixed - The payload of the notification.
 	 */
 	socketNotificationReceived: function(notification, payload) {
-		console.log("Weasley clock node helper received notifications: " + notification)
+		console.log("Weasley clock node helper received notifications: " + notification);
 		if(notification === "MMM-WeasleyClock-CONFIG") {
 			this.establishConnection(payload);
 		}
