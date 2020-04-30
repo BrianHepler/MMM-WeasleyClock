@@ -19,14 +19,23 @@ Module.register("MMM-WeasleyClock", {
 		port: 8883,
 		uniqueId: "notunique",
 		clockStyle: "table",
+		radius: 75
 	},
 
 	colorCycle: ["blue","green","yellow","purple","red","white","gray"],
+	handList: [],
+	locationPoints: [],
 	requiresVersion: "2.1.0", // Required version of MagicMirror
 
 	getScripts: function() {
 		return [
 			"svg.js"
+		];
+	},
+
+	getStyles: function () {
+		return [
+			"MMM-WeasleyClock.css",
 		];
 	},
 
@@ -102,49 +111,79 @@ Module.register("MMM-WeasleyClock", {
 
 		} else if (this.config.clockStyle == "clock") {
 			// build the clock
-			var draw = SVG(wrapper).size("100%","100%");
+			this.locationPoints = [];
+			this.handList = [];
+			var draw = SVG().addTo(wrapper).size("100%","100%");
 			draw.viewbox(-100, -100, 200, 200);
 
 			// draw the center hub
-			var point = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
-			const radLength = 65;
+			var hub = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
 
 			for (i=0; i<numPoints; i++) {
-				console.log("Placing " + locations[i]);
+				if (this.config.debug) { console.log("Placing " + locations[i]); }
 				const plier = 2 * Math.PI / numPoints * i;
-				console.log("Multiplier around circle: " + plier);
 
-				var cordx = Math.cos(plier) * radLength;
-				var cordy = Math.sin(plier) * radLength;
-				console.log("Coordinates: " + cordx + "," + cordy);
+				var cordx = Math.cos(plier) * this.config.radius;
+				var cordy = Math.sin(plier) * this.config.radius;
 				var spot = draw.circle("1%").fill("blue").stroke("1").cx(cordx).cy(cordy);
+				spot.id("loc" + locations[i]);
 
-				var locText = draw.text(locations[i]).x(cordx).y(cordy).fill("white");
-				locText.attr("id","loc" + locations[i]);
+				var locText = draw.text(locations[i]).fill("white");
+				locText.attr("id","locName-" + locations[i]);
 				locText.font({
 					anchor: "middle",
 					size: "small",
 					family: "satisfy, blackjack, cursive"
 				});
+				locText.cx(cordx).cy(cordy);
+				this.locationPoints.push(spot);
 			}
 
 			// create hands for people
 			for (j=0; j < numPeople; j++) {
 				var hand = this.createHand(draw, people[j]);
 				hand.attr("fill",this.colorCycle[j]);
+				this.handList.push(hand);
 
-				// testing rotation
-				hand.rotate((360 / numPoints * j),0,0);
-				console.log("Added person " + people[j]);
+				if (this.config.debug) { console.log("Added hand: " + hand.id()); }
 			}
 		}
 		return wrapper;
 	},
 
-	getStyles: function () {
-		return [
-			"MMM-WeasleyClock.css",
-		];
+	/**
+	 * Rotates the hand with @name to match the position of the given @location
+	 * @param {*} name The name of the person. Must match an entry in the people array
+	 * @param {*} location The location of the person. Must match an entry in the location array.
+	 */
+	rotateHand: function(name, location) {
+		var handID = "hand" + name;
+		var locID = "loc" + location;
+		var hand, locPoint, newRotate;
+		for (i=0; i<this.handList.length; i++) {
+			if (this.handList[i].id() == handID) {
+				hand = this.handList[i];
+			}
+		}
+		for (j=0; j<this.locationPoints.length; j++) {
+			if (this.locationPoints[j].id() == locID) {
+				locPoint = this.locationPoints[j];
+				// console.log("Found " + location);
+			}
+		}
+		var curRotate = hand.transform().rotate;
+		var locRotate = Math.atan2(locPoint.cy(),locPoint.cx()) * 180 / Math.PI;
+		console.log("Hand is at " + Math.round(curRotate) + ", loc is at " + Math.round(locRotate));
+		if (curRotate < locRotate) {
+			newRotate = Math.abs(curRotate - locRotate);
+		} else {
+			newRotate = Math.abs(curRotate - locRotate) * -1;
+		}
+		newRotate = Math.round(newRotate);
+
+		console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
+		hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
+
 	},
 
 	/**
@@ -154,9 +193,10 @@ Module.register("MMM-WeasleyClock", {
 	 */
 	processTraveling: function(name, data) {
 		if (this.locationMap.get(name) != null) {
-			console.log(name + " is traveling.");
+			// if (this.config.debug) { console.log(name + " is traveling."); }
 			this.locationMap.set(name,"Traveling");
-			this.updateDom();
+			if (this.config.clockStyle=="table") { this.updateDom(); }
+			else { this.rotateHand(name, "Traveling"); }
 		} else if (this.config.debug) {
 			console.log(name + " is not one of us. Goodbye.");
 		}
@@ -171,7 +211,9 @@ Module.register("MMM-WeasleyClock", {
 		if (this.locationMap.get(name) != null) {
 			if (this.config.debug) { console.log(name + " is now lost. :("); }
 			this.locationMap.set(name,"Lost");
-			this.updateDom();
+			if (this.config.clockStyle=="table") { this.updateDom(); }
+			else { this.rotateHand(name, "Lost"); }
+
 		} else if (this.config.debug) {
 			console.log(name + " is not one of us. Shun the unbeliever!");
 		}
@@ -194,9 +236,12 @@ Module.register("MMM-WeasleyClock", {
 		if (this.locationSet.has(loc)) {
 			if (this.config.debug) { console.log("Found! Updating location map."); }
 			this.locationMap.set(name,loc);
-			this.updateDom();
-		} else if (this.config.debug) {
-			console.log("Location '" + loc + "' not found.");
+			if (this.config.clockStyle == "table") { this.updateDom();}
+			else {this.rotateHand(name, loc);}
+
+		} else { // people in unknown locations are lost
+			this.processLost(name);
+			if (this.config.debug) { console.log("Location '" + loc + "' not found."); }
 		}
 	},
 
@@ -240,12 +285,16 @@ Module.register("MMM-WeasleyClock", {
 	  },
 
 	createHand: function(svg, name) {
-		var pplHand = svg.text(name + " ->").x(7).y(-5);
-		pplHand.attr("id","hand" + name);
+		var pplHand = svg.text(name + " ->").id("hand" + name);
+		pplHand.attr("id", "hand"+name);
 		pplHand.font({
 			family: "calligraphica, satisfy, cursive",
 			anchor: "left",
 			size: "x-small"
+		});
+
+		pplHand.click(function(location) {
+			console.loc("rotating hand " + pplHand.id);
 		});
 		return pplHand;
 	},
