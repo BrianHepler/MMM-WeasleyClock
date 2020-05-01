@@ -9,7 +9,7 @@
   "author": "Brian Hepler",
   "license": "MIT",
   "dependencies": {
-    "mqtt": "^2.18.8"
+    "mqtt": "4.0.0"
   },
   "devDependencies": {
     "grunt": "latest",

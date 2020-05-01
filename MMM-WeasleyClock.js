@@ -19,7 +19,7 @@ Module.register("MMM-WeasleyClock", {
 		port: 8883,
 		uniqueId: "notunique",
 		clockStyle: "table",
-		radius: 75
+		radius: 85
 	},
 
 	colorCycle: ["blue","green","yellow","purple","red","white","gray"],
@@ -114,10 +114,10 @@ Module.register("MMM-WeasleyClock", {
 			this.locationPoints = [];
 			this.handList = [];
 			var draw = SVG().addTo(wrapper).size("100%","100%");
-			draw.viewbox(-100, -100, 200, 200);
+			draw.viewbox(-150, -150, 300, 300);
 
 			// draw the center hub
-			var hub = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
+			// var hub = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
 
 			for (i=0; i<numPoints; i++) {
 				if (this.config.debug) { console.log("Placing " + locations[i]); }
@@ -125,7 +125,7 @@ Module.register("MMM-WeasleyClock", {
 
 				var cordx = Math.cos(plier) * this.config.radius;
 				var cordy = Math.sin(plier) * this.config.radius;
-				var spot = draw.circle("1%").fill("blue").stroke("1").cx(cordx).cy(cordy);
+				var spot = draw.circle("1%").fill("none").stroke("1").cx(cordx).cy(cordy);
 				spot.id("loc" + locations[i]);
 
 				var locText = draw.text(locations[i]).fill("white");

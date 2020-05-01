@@ -7,7 +7,8 @@
  */
 
 var NodeHelper = require("node_helper");
-var mqtt = require("mqtt");
+const mqtt = require("mqtt");
+const fs = require("fs");
 var subTopic = "";
 var pubTopic = "";
 var client;
@@ -34,7 +35,7 @@ module.exports = NodeHelper.create({
 		if (notification === "MMM-WeasleyClock-START") {
 			console.log("Starting Weasley Clock message client. Notification:", notification, "payload: ", payload);
 			// Send notification
-			this.sendNotificationTest(this.anotherFunction()); //Is possible send objects :)
+			this.sendNotificationTest(this.anotherFunction()); 
 		}
 
 		if (notification === "MMM-WeasleyClock-UPDATECLIENTS") {
@@ -78,17 +79,18 @@ module.exports = NodeHelper.create({
 	 */
 	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		var host = config.host;
+		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
-			clean: true
+			clean: true,
+			ca: caFile
 		};
 
 		console.debug(options);
-		client = mqtt.connect("mqtt://" + host, options);
+		client = mqtt.connect("mqtts://" + config.host, options);
 
 		return client;
 	},
