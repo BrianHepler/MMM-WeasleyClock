@@ -29,7 +29,7 @@ Module.register("MMM-WeasleyClock", {
 
 	getScripts: function() {
 		return [
-			"svg.js"
+			"svg.min.js"
 		];
 	},
 
