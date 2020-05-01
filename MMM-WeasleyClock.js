@@ -14,7 +14,7 @@ Module.register("MMM-WeasleyClock", {
 		uniqueId: "default",
 		debug: false,
 		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
-		people: ["Brian","Deverina","Dementor"],
+		people: ["Harry","Ron","Ginny"],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
 		uniqueId: "notunique",
