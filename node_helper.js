@@ -20,9 +20,8 @@ module.exports = NodeHelper.create({
 	},
 
 	stop: function() {
-		client.end();
-		client = null;
-		mqtt = null;
+		this.client.end();
+		this.client = null;
 	},
 
 	/* socketNotificationReceived(notification, payload)
@@ -51,18 +50,14 @@ module.exports = NodeHelper.create({
 	},
 
 	establishConnection: function(config) {
-		this.subTopic = "owntracks/" + config.uniqueId + "/";
+		var subTopic = "owntracks/" + config.uniqueId;
 		if (this.client == null) {
 			this.client = this.getMQTTClient(config);
 			// handle the events from the MQTT server
 			this.client.on("connect", ()=> {
-				console.log("MQTT connection established.");
-	
-				// Subscribe to each person's device updates
-				for (i=0; i< config.people.length; i++) {
-					console.log("Subscribing to " + this.subTopic + config.people[i] + "/+");
-					this.client.subscribe(this.subTopic + config.people[i] + "/#");
-				}
+				console.debug("Subscribing to all content for uniqueID " + subTopic);
+				this.client.subscribe(subTopic + "/+");
+				this.client.subscribe(subTopic + "/+/event");
 	
 				this.client.on("message", (topic, message) => {
 					console.log ("message received in topic " + topic);
@@ -88,6 +83,8 @@ module.exports = NodeHelper.create({
 		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
+			username: config.uniqueId,
+			password: "Get_Out_Of_My_Code",
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
@@ -103,7 +100,6 @@ module.exports = NodeHelper.create({
 
 	// Process the messages received by the client
 	handleMessage: function(config, topic, message) {
-		console.log("Processing message:");
 		console.debug(message);
 
 		if (message == null) {
@@ -152,7 +148,7 @@ module.exports = NodeHelper.create({
 	 */
 	processLocation: function(config, message) {
 		var vel = message.vel;
-		console.log("Traveling at " + vel);
+		console.debug("Traveling at " + vel);
 		
 		// check for region
 		if (message.inregions) {
@@ -171,11 +167,11 @@ module.exports = NodeHelper.create({
 		var event = message.event;
 
 		if (event == "enter") {
-			console.log(message.person + " has entered region(s) '" + message.desc +"'");
+			console.debug(message.person + " has entered region(s) '" + message.desc +"'");
 			message.inregions = new Array(message.desc);
 			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
 		} else {
-			console.log(message.person + " has just left '" + message.inregions + "'");
+			console.debug(message.person + " has just left '" + message.inregions + "'");
 			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
 
