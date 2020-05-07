@@ -13,7 +13,7 @@ Module.register("MMM-WeasleyClock", {
 		retryDelay: 5000,
 		debug: false,
 		sounds: true,
-		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
+		locations: ["Home","School","Work","Mortal Peril","Jail","Food"],
 		people: ["Harry","Ron","Ginny"],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
@@ -30,7 +30,8 @@ Module.register("MMM-WeasleyClock", {
 
 	getScripts: function() {
 		return [
-			"svg.min.js"
+			this.file("lib/svg.min.js"),
+			this.file("lib/howler.min.js")
 		];
 	},
 
@@ -51,7 +52,13 @@ Module.register("MMM-WeasleyClock", {
 
 		// Make sure mandatory locations are present
 		this.config.locations = this.uniqueArray(this.config.locations);
-		if (this.config.locations.indexOf("Lost") === -1) { this.config.locations.push("Lost"); }
+		if (this.config.locations.indexOf("Lost") === -1) {
+			var tempLocs = ["Lost"];
+			for (i=0;i<this.config.locations.length;i++) {
+				tempLocs.push(this.config.locations[i]);
+			}
+			this.config.locations = tempLocs;
+		}
 		if (this.config.locations.indexOf("Traveling") === -1) { this.config.locations.push("Traveling"); }
 
 		// Set people to default location
@@ -172,24 +179,37 @@ Module.register("MMM-WeasleyClock", {
 				// console.log("Found " + location);
 			}
 		}
-		var curRotate = hand.transform().rotate;
-		var locRotate = Math.atan2(locPoint.cy(),locPoint.cx()) * 180 / Math.PI;
-		console.log("Hand is at " + Math.round(curRotate) + ", loc is at " + Math.round(locRotate));
-		if (curRotate < locRotate) {
-			newRotate = Math.abs(curRotate - locRotate);
-		} else {
-			newRotate = Math.abs(curRotate - locRotate) * -1;
-		}
-		newRotate = Math.round(newRotate);
-
-		console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
-		hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
-
 		if (this.config.sounds) {
-			var sound = new Audio();
-			sound.src = "modules/MMM-WeasleyClock/crank-n-chimes.wav";
-			sound.loop = false;
-			sound.play();
+			// this.sendSocketNotification("MMM-WeasleyClock-PLAYSOUND", this.config);
+			try {
+				var sound = new Howl({
+					src: [this.file("sounds/crank-n-chimes.mp3"), this.file("sounds/crank-n-chimes.wav")],
+					volume: 0.5,
+					onend: function() {
+						console.log("Sound playback complete!");
+					}
+				});
+				sound.play();
+			} catch (e) {
+				console.debug(e);
+			}
+		}
+
+		try {
+			var curRotate = hand.transform().rotate;
+			var locRotate = Math.atan2(locPoint.cy(),locPoint.cx()) * 180 / Math.PI;
+			if (this.config.debug) { console.log("Hand is at " + Math.round(curRotate) + ", loc is at " + Math.round(locRotate)); }
+			if (curRotate < locRotate) {
+				newRotate = Math.abs(curRotate - locRotate);
+			} else {
+				newRotate = Math.abs(curRotate - locRotate) * -1;
+			}
+			newRotate = Math.round(newRotate);
+
+			console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
+			hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
+		} catch (e) {
+			console.debug("Unable to rotate hand for " + name + " to " + location);
 		}
 
 	},

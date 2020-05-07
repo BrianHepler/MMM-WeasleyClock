@@ -9,6 +9,7 @@
 var NodeHelper = require("node_helper");
 const mqtt = require("mqtt");
 const fs = require("fs");
+const {Howl, Howler} = require("howler");
 
 var client;
 
@@ -47,6 +48,12 @@ module.exports = NodeHelper.create({
 			if (payload.debug) { console.log("Updating clients."); }
 			// this.updateClients(payload);
 		}
+
+		// possibly this will never be used
+		if (notification === "MMM-WeasleyClock-PLAYSOUND") {
+			if (payload.debug) { console.log("Playing sound effect."); }
+			this.playSound(payload);
+		}
 	},
 
 	establishConnection: function(config) {
@@ -82,7 +89,7 @@ module.exports = NodeHelper.create({
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
 		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
 		var options = {
-			clientId: "mirror-" + config.uniqueId,
+			clientId: "mirror-dev-" + config.uniqueId,
 			username: config.uniqueId,
 			password: "Get_Out_Of_My_Code",
 			rejectUnauthorized: false,
@@ -143,8 +150,8 @@ module.exports = NodeHelper.create({
 	 * Processes the location messages. Looks for a high velocity and a location.
 	 * Currently, location takes precedence over velocity, so if you're driving
 	 * past a location, it will mark you as in that location instead of traveling.
-	 * @param {*} config 
-	 * @param {*} message 
+	 * @param {*} config Configuration object passed in from the module.
+	 * @param {*} message Message received from the MQTT server.
 	 */
 	processLocation: function(config, message) {
 		var vel = message.vel;
@@ -176,6 +183,33 @@ module.exports = NodeHelper.create({
 		}
 
 		//TODO: add notification noise to signal change in state.
+	},
+
+	playSound: function (config) {
+		// are we gonna do this?
+		var filename = "/sounds/crank-n-chimes.mp3";
+		let soundfile = this.path + filename;
+
+		// Make sure file exists before playing
+		try {
+			fs.accessSync(soundfile, fs.F_OK);
+			console.debug("Playing " + soundfile);
+			// new Audic(soundfile.toString()).play();
+			// var howl = new Howl([this.path + "\sounds\crank-n-chimes.mp3",this.path + "\sounds\crank-n-chimes.wav"]);
+			var howl = new Howl(
+				{
+					src:[soundfile],
+					onend: function() {
+						console.log("Finished playback.");
+					  }
+				});
+		
+		} catch (e) {
+			// Custom sequence doesn't exist
+			console.debug("Sound does not exist: " + soundfile);
+			return;
+		}
+
 	},
 
 });
