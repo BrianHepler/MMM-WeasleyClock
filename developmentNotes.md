@@ -3,6 +3,11 @@ The module uses a MQTT server (mosquitto) to handle message traffic between the 
 
 It's *possible* to use the mirror module to configure the mobile devices. Specifically, we have to configure the mobile devices to publish to `owntracks/uniqueId/person` and subscribe to `owntracks/uniqueId/+/+/#`. This is most likely going to have to be accomplished with the `cmd` topic in the MQTT broker. Mobile clients will have to allow remote commands.
 
+## Setting Up Your Own MQTT Server
+If you don't trust my MQTT server, you are welcome to stand up your own. I use [Mosquitto](https://github.com/eclipse/mosquitto) as it is lightweight and relatively easy to set up on a Raspberry Pi 2 I had laying around. The module insists on a secured connection as I did not want my location information transmitted in unencrypted form. You will need to enable TLS on your MQTT server and provide the module with your own Certificate Authority cert. I found a decent tutorial over at [Steve's Internet Guide](http://www.steves-internet-guide.com/mosquitto-tls/).
+
+If you're going to attempt this, I highly recommend getting an MQTT client for your development workstation. I used [MQTT-Spy](https://github.com/eclipse/paho.mqtt-spy) and it works well for pushing messages as well as troubleshooting the TLS settings.
+
 ## Future Features
 * Enable region definitions in module config to push regions to devices
 * Dynamically load new locations based upon waypoint definition messages
@@ -12,14 +17,16 @@ It's *possible* to use the mirror module to configure the mobile devices. Specif
 This is from the MQTT server log files. This is what each mobile app subscribes to when you connect.
 Note: This will need to be changed to add uniqueId to the base subscription path. Otherwise, everyone will see everyone else on their mobile device. Entertaining, but not terribly secure.
 ```
-2019-05-05T13:39:15: New client connected from 192.168.1.1 as CowboysDudeCowboy (p1, c1, k3600, u'cowboysdude').
-2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+
-2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/info
-2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/CowboysDude/Cowboy/cmd
-2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/event
-2019-05-05T13:39:15: CowboysDudeCowboy 2 owntracks/+/+/waypoint
+2020-05-06T09:11:50: New connection from 192.168.1.1 on port 8883.
+2020-05-06T09:11:50: Client demoharry already connected, closing old connection.
+2020-05-06T09:11:50: New client connected from 192.168.1.1 as demoharry (p1, c1, k3600, u'demo').
+2020-05-06T09:11:50: demoharry 2 owntracks/+/+
+2020-05-06T09:11:50: demoharry 2 owntracks/+/+/info
+2020-05-06T09:11:50: demoharry 2 owntracks/demo/Harry/cmd
+2020-05-06T09:11:50: demoharry 2 owntracks/+/+/event
+2020-05-06T09:11:50: demoharry 2 owntracks/+/+/waypoint
 ```
-Subscription to `owntracks/+/+ 
+Note: `owntracks/demo/Harry/cmd` are values representing "Owntracks, UniqueId, Person, command channel".
 
 ### Example OwnTracks Transition data:
 This is what is sent when a mobile device enters a defined region.
