@@ -11,15 +11,15 @@ Module.register("MMM-WeasleyClock", {
 	defaults: {
 		updateInterval: 60000,
 		retryDelay: 5000,
-		uniqueId: "default",
 		debug: false,
 		locations: ["Home","School","Work","Mortal Peril","Jail","Food","Traveling"],
 		people: ["Harry","Ron","Ginny"],
 		host: "weasleymirror.duckdns.org",
 		port: 8883,
 		uniqueId: "notunique",
-		clockStyle: "table",
-		radius: 85
+		clockStyle: "clock",
+		radius: 85,
+		cafile: "weasley_mirror_ca.crt"
 	},
 
 	colorCycle: ["blue","green","yellow","purple","red","white","gray"],
@@ -183,6 +183,16 @@ Module.register("MMM-WeasleyClock", {
 
 		console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
 		hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
+
+		/* Ahem.
+		     // create audio, only on full moon, wolf howling
+             			 if (this.config.sounds == "yes") {
+             					var sound = new Audio();
+             					sound.src = 'modules/MMM-Lunartic/sounds/wolf.mp3';
+             					sound.loop = false;
+             					sound.play();
+						   }
+		*/
 
 	},
 

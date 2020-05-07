@@ -9,8 +9,7 @@
 var NodeHelper = require("node_helper");
 const mqtt = require("mqtt");
 const fs = require("fs");
-var subTopic = "";
-var pubTopic = "";
+
 var client;
 
 module.exports = NodeHelper.create({
@@ -18,6 +17,12 @@ module.exports = NodeHelper.create({
 	// Initialize MQTT connection object
 	start: function() {
 		// var client = new Messaging.Client()
+	},
+
+	stop: function() {
+		client.end();
+		client = null;
+		mqtt = null;
 	},
 
 	/* socketNotificationReceived(notification, payload)
@@ -33,14 +38,15 @@ module.exports = NodeHelper.create({
 		}
 
 		if (notification === "MMM-WeasleyClock-START") {
-			console.log("Starting Weasley Clock message client. Notification:", notification, "payload: ", payload);
+			if (payload.debug) { console.log("Starting Weasley Clock message client. Notification:", notification, "payload: ", payload); }
 			// Send notification
 			this.sendNotificationTest(this.anotherFunction()); 
 		}
 
+		// save this for later. Perhaps provide long/lat regions for push to phones.
 		if (notification === "MMM-WeasleyClock-UPDATECLIENTS") {
-			console.log("Updating clients.");
-			this.updateClients(payload);
+			if (payload.debug) { console.log("Updating clients."); }
+			// this.updateClients(payload);
 		}
 	},
 
@@ -175,35 +181,5 @@ module.exports = NodeHelper.create({
 
 		//TODO: add notification noise to signal change in state.
 	},
-
-	/**
-	 * Loops through the configured people and issues a remote configuration command. 
-	 * The command changes the default publish topic to exclude the device ID from
-	 * the topic.
-	 * @param {Object} config 
-	 */
-	updateClients: function(config) {
-		var people = config.people;
-		var numPeople = people.length;
-		var numDevices = this.idSet.length;
-		
-		var options = {
-			_type: "cmd",
-			action: "setConfiguration",
-			configuration: {
-				_type: "configuration",
-				subTopicBase: pubTopic + "%u"
-			}
-		};
-		
-		for (i=0; i < numPeople; i++) {
-			console.log ("looping over " + numDevices + " devices.");
-			for (g=0; g < numDevices; g++) {
-				console.debug("Issuing command to " + pubTopic + "/" + people[i] + "/" +idSet[g]);
-				cmdClient.publish(pubTopic + "/" + people[i] + "/" + idSet[g], options);
-			}
-		}
-		cmdClient = null;
-	}
 
 });
