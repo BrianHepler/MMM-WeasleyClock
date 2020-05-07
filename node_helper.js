@@ -89,7 +89,7 @@ module.exports = NodeHelper.create({
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
 		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
 		var options = {
-			clientId: "mirror-dev-" + config.uniqueId,
+			clientId: "mirror-" + config.uniqueId,
 			username: config.uniqueId,
 			password: "Get_Out_Of_My_Code",
 			rejectUnauthorized: false,
