@@ -4,17 +4,16 @@ A Magic Mirror module for displaying results from [OwnTracks](http://owntracks.o
 
 This module was inspired by the Instructable [Build Your Own Weasley Location Clock](https://www.instructables.com/id/Build-Your-Own-Weasley-Location-Clock/).
 
-1. [Module Installation](#install)
-2. [How it Works](#how)
-3. [Configuring the Module](#modconfig)
-4. [Table Mode](#tablemode)
-5. [Installing OwnTracks on Your Phone](#installmobile)
+1. [Module Installation](#Installation)
+2. [How it Works](#Architecture)
+3. [Configuring the Module](#Configuration)
+4. [Table Mode](#Alternate)
+5. [Installing OwnTracks on Your Phone](#Owntracks)
 6. [Adding Locations to Your Phone](#regions)
-7. [If You Want to Use Your Own MQTT Server](#mqttsetup)
+7. [If You Want to Use Your Own MQTT Server](#development)
 7. [Upcoming Features](#todo)
 
-<a href="#install"></a>
-## Installation in Magic Mirror
+## Installation
 Installation of the Magic Mirror module is similar to all other modules:
 ```
 cd /home/pi/MagicMirror/modules
@@ -42,8 +41,7 @@ Modify your `config.js` file to include the module.
 * `svg.js` to draw the clock (loaded via npm)
 * `Howler` to play the sound file (loaded via npm)
 
-<a href="#how"></a>
-## How it works
+## Architecture
 The basic operational flow goes like this:
 * The OwnTracks mobile app uses your phone's location services to figure out 
 where you are and if you are in a defined area. 
@@ -54,7 +52,7 @@ where you are and if you are in a defined area.
 I am hosting an MQTT server for this module at weasleymirror.duckdns.org. You are welcome to set up your own server or use mine. I can't see your messages, but I can see if you connect successfully.
 
 <a href="#modconfig"></a>
-## Configuring the Module 
+## Configuration 
 Your configuration needs to contain a unique identifier that will separate your module from all of the other modules (namely mine). This unique ID will be entered both in the module and OwnTracks app on your phone. If you do not 
 enter a unique ID, everyone who uses the same ID will be able to see your movements.
 ```
@@ -100,6 +98,7 @@ Once everything is complete, you can go back to the Preferences menu and click o
 Whew! At this point, you are connected to my MQTT server, but your phone doesn't know anything about the locations you specified in the `config.js`. Specifying a location in OwnTracks is currently rather cumbersome, but it's worth it when you're done.
 
 You need to create Regions in OwnTracks that match to the locations you wish to display in your Weasley Clock. 
+
 ### Adding Regions to OwnTracks
 In order for the module to work, the OwnTracks app will need to know the location of each location you're displaying in the module. So you'll need:
 - The list of locations that you configured for your mirror.
@@ -110,14 +109,14 @@ Note: The locations can be different for each phone. For example, my wife and I 
 In the OwnTracks app, opent he menu and click on Regions. Click on the "+" button to add a new region. Enter the name of the location and the longitude & latitude. Add a radius to define the area that the phone will consider to be that location. 250 meters is a good starting point.
 <br><img src="images/regions.png" border=1 height=200> <img src=images/region_edit.png border=1 height=200>
 
-<a href="#tablemode"></a>
-### Table Mode
+### Alternate
 <img src=images/table_mode.png border=1 height=200><br>
 If you wish to have a compact representation of the OwnTracks data, you can switch the display to a simple two-column table. It contains a list of the defined people and their interpreted location. This is good for smaller areas of the Magic Mirror interface. Table mode also will not play sounds when locations update.
 
 <a href="#configoptions"></a>
 ## Configuration Options (Module)
 These are the options to configure the module. Configuring the OwnTracks application will be handled below.
+
 <table>
 <tr><th>Option</th><th>Description</th></tr>
 <tr><td><b>uniqueId</b></td>
@@ -176,8 +175,7 @@ These are the options to configure the module. Configuring the OwnTracks applica
 </tr>
 </table>
 
-<a href="#installmobile"></a>
-## Configuring the OwnTracks Mobile Client 
+## OwnTracks
 Owntracks is a free mobile app that will track your location and send updates to a MQTT server. Here is how you configure the mobile app to work with my MQTT server. First, you will need to get my Certificate Authority cert onto your phone. The easiest way to do this is to email yourself and include the cert as an attachment. The cert is included in the Github repository and is named `weasley_mirror_ca.crt`. 
 
 All of these steps are to be taken on your mobile phone.
@@ -195,8 +193,7 @@ All of these steps are to be taken on your mobile phone.
 
 Just FYI - Owntracks mobile app will automatically publish to "owntracks/*uniqueId*/deviceId"
 
-<a href="#regions"></a>
-## Setting up Regions in OwnTracks
+## Regions
 Regions = Locations in your module configuration. The way this works is that when your cell phone/table enters a defined region, it publishes a notification to the MQTT server. To get it to work, you have to define what regions correspond to what name.
 
 Start with the list of locations that you defined in the `locations` parameter in the module configuration. "School", "Home", "Mortal Peril", etc. 
@@ -212,14 +209,13 @@ Do this for each region that you wish to use. It is important to note that each 
 
 Note: Two names are reserved by the module: Traveling and Lost.
 
-<a href="#mqttsetup"></a>
-## If You Want to Use Your Own MQTT Server
+## Development
 I've written up some advice to help over at the [Developer's Notes](developmentnotes.md). I've also included some debugging tips.
 
-<a href="#todo"></a>
-## Upcoming Features (hopefully)
+## ToDo
 * Better graphics for the clock, including backgrounds and fancy hands
 * Third style of display, using [Flapper](https://github.com/jayKayEss/Flapper)
 * Add language translations for "Traveling" and "Lost"
 * Selectable sounds for when the locations of people update
-* Get the fancy font to work
+* ~~Get the fancy font to work~~
+* Move installation instructions to the module Wiki
