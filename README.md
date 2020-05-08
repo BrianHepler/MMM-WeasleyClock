@@ -3,7 +3,18 @@
 A Magic Mirror module for displaying results from [OwnTracks](http://owntracks.org) in a manner similar to the _Harry Potter_ series of movies. This module will parse messages sent from your mobile phone and display your rough location.
 
 This module was inspired by the Instructable [Build Your Own Weasley Location Clock](https://www.instructables.com/id/Build-Your-Own-Weasley-Location-Clock/).
-## Installation on the Mirror
+
+1. [Module Installation](#install)
+2. [How it Works](#how)
+3. [Configuring the Module](#modconfig)
+4. [Table Mode](#tablemode)
+5. [Installing OwnTracks on Your Phone](#installmobile)
+6. [Adding Locations to Your Phone](#regions)
+7. [If You Want to Use Your Own MQTT Server](#mqttsetup)
+7. [Upcoming Features](#todo)
+
+<a href="#install"></a>
+## Installation in Magic Mirror
 Installation of the Magic Mirror module is similar to all other modules:
 ```
 cd /home/pi/MagicMirror/modules
@@ -27,10 +38,11 @@ Modify your `config.js` file to include the module.
 <br><img src=images/status_success.png border=1 height=400>
 ### Dependencies
 * A working installation of [Magic Mirror](https://github.com/MichMich/MagicMirror)
-* `mqtt` to connect to the mosquitto message broker
-* `svg.js` to draw the clock
-* `Howler` to play the sound file
+* `mqtt` to connect to the mosquitto message broker (loaded via npm)
+* `svg.js` to draw the clock (loaded via npm)
+* `Howler` to play the sound file (loaded via npm)
 
+<a href="#how"></a>
 ## How it works
 The basic operational flow goes like this:
 * The OwnTracks mobile app uses your phone's location services to figure out 
@@ -41,7 +53,8 @@ where you are and if you are in a defined area.
 
 I am hosting an MQTT server for this module at weasleymirror.duckdns.org. You are welcome to set up your own server or use mine. I can't see your messages, but I can see if you connect successfully.
 
-## Using the Module 
+<a href="#modconfig"></a>
+## Configuring the Module 
 Your configuration needs to contain a unique identifier that will separate your module from all of the other modules (namely mine). This unique ID will be entered both in the module and OwnTracks app on your phone. If you do not 
 enter a unique ID, everyone who uses the same ID will be able to see your movements.
 ```
@@ -55,6 +68,8 @@ enter a unique ID, everyone who uses the same ID will be able to see your moveme
     },
 },
 ```
+See the [full list of options](#configoptions).
+
 ## Installation on Your Phone
 OwnTracks is a free (as in beer) application for your mobile phone. Go to the Google Play Store or the iTunes store and search for OwnTracks. Install the app and then open it, just like you were installing Candy Crush.
 
@@ -95,10 +110,12 @@ Note: The locations can be different for each phone. For example, my wife and I 
 In the OwnTracks app, opent he menu and click on Regions. Click on the "+" button to add a new region. Enter the name of the location and the longitude & latitude. Add a radius to define the area that the phone will consider to be that location. 250 meters is a good starting point.
 <br><img src="images/regions.png" border=1 height=200> <img src=images/region_edit.png border=1 height=200>
 
+<a href="#tablemode"></a>
 ### Table Mode
 <img src=images/table_mode.png border=1 height=200><br>
 If you wish to have a compact representation of the OwnTracks data, you can switch the display to a simple two-column table. It contains a list of the defined people and their interpreted location. This is good for smaller areas of the Magic Mirror interface. Table mode also will not play sounds when locations update.
 
+<a href="#configoptions"></a>
 ## Configuration Options (Module)
 These are the options to configure the module. Configuring the OwnTracks application will be handled below.
 <table>
@@ -159,6 +176,7 @@ These are the options to configure the module. Configuring the OwnTracks applica
 </tr>
 </table>
 
+<a href="#installmobile"></a>
 ## Configuring the OwnTracks Mobile Client 
 Owntracks is a free mobile app that will track your location and send updates to a MQTT server. Here is how you configure the mobile app to work with my MQTT server. First, you will need to get my Certificate Authority cert onto your phone. The easiest way to do this is to email yourself and include the cert as an attachment. The cert is included in the Github repository and is named `weasley_mirror_ca.crt`. 
 
@@ -177,6 +195,7 @@ All of these steps are to be taken on your mobile phone.
 
 Just FYI - Owntracks mobile app will automatically publish to "owntracks/*uniqueId*/deviceId"
 
+<a href="#regions"></a>
 ## Setting up Regions in OwnTracks
 Regions = Locations in your module configuration. The way this works is that when your cell phone/table enters a defined region, it publishes a notification to the MQTT server. To get it to work, you have to define what regions correspond to what name.
 
@@ -193,9 +212,11 @@ Do this for each region that you wish to use. It is important to note that each 
 
 Note: Two names are reserved by the module: Traveling and Lost.
 
+<a href="#mqttsetup"></a>
 ## If You Want to Use Your Own MQTT Server
 I've written up some advice to help over at the [Developer's Notes](developmentnotes.md). I've also included some debugging tips.
 
+<a href="#todo"></a>
 ## Upcoming Features (hopefully)
 * Better graphics for the clock, including backgrounds and fancy hands
 * Third style of display, using [Flapper](https://github.com/jayKayEss/Flapper)
