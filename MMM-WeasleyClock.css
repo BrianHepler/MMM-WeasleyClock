@@ -6,10 +6,15 @@
  * MIT Licensed.
  *
  */
- #face {
-	stroke-width: 2px; stroke: #fff; 
-}
-#hour, #min, #sec {
-	stroke-width: 1px; fill: #333; stroke: #555;
-}
-#sec { stroke: #f55; }
+
+@font-face {
+	font-family: Calligraphica;
+	font-style: cursive;
+	font-weight: 100;
+  
+	src:
+	  local("calligraphica"),
+	  url("fonts/Kingthings_Calligraphica_2.ttf") format("truetype");
+  
+  }
+

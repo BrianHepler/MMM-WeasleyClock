@@ -123,6 +123,7 @@ Module.register("MMM-WeasleyClock", {
 			this.handList = [];
 			var draw = SVG().addTo(wrapper).size("100%","100%");
 			draw.viewbox(-150, -150, 300, 300);
+			draw.className = "svgbox";
 
 			// draw the center hub
 			// var hub = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
@@ -138,10 +139,11 @@ Module.register("MMM-WeasleyClock", {
 
 				var locText = draw.text(locations[i]).fill("white");
 				locText.attr("id","locName-" + locations[i]);
+				locText.className = "location";
 				locText.font({
 					anchor: "middle",
 					size: "small",
-					family: "satisfy, blackjack, cursive"
+					family: "calligraphica, satisfy, cursive"
 				});
 				locText.cx(cordx).cy(cordy);
 				this.locationPoints.push(spot);
@@ -151,6 +153,7 @@ Module.register("MMM-WeasleyClock", {
 			for (j=0; j < numPeople; j++) {
 				var hand = this.createHand(draw, people[j]);
 				hand.attr("fill",this.colorCycle[j]);
+				
 				this.handList.push(hand);
 
 				if (this.config.debug) { console.log("Added hand: " + hand.id()); }
@@ -314,11 +317,14 @@ Module.register("MMM-WeasleyClock", {
 
 	createHand: function(svg, name) {
 		var pplHand = svg.text(name + " ->").id("hand" + name);
-		pplHand.attr("id", "hand"+name);
+		pplHand.attr({
+			"id": "hand"+name,
+			"classname": "hand"
+		});
 		pplHand.font({
 			family: "calligraphica, satisfy, cursive",
 			anchor: "left",
-			size: "x-small"
+			size: "medium"
 		});
 
 		pplHand.click(function(location) {
