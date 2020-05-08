@@ -1,5 +1,6 @@
 # MMM-WeasleyClock
-Magic Mirror module for displaying results from [OwnTracks](http://owntracks.org) in a manner similar to the _Harry Potter_ series of movies. This module will parse messages sent from your mobile phone and display your rough location.
+<img src=images/module1.png border=1 width=600><br>
+A Magic Mirror module for displaying results from [OwnTracks](http://owntracks.org) in a manner similar to the _Harry Potter_ series of movies. This module will parse messages sent from your mobile phone and display your rough location.
 
 This module was inspired by the Instructable [Build Your Own Weasley Location Clock](https://www.instructables.com/id/Build-Your-Own-Weasley-Location-Clock/).
 ## Installation on the Mirror
@@ -10,10 +11,25 @@ git clone https://github.com/BrianHepler/MMM-WeasleyClock
 cd MMM-WeasleyClock
 npm install
 ```
+Modify your `config.js` file to include the module.
+```
+{
+    module: "MMM-WeasleyClock",
+    position: "middle_center",
+    config: {
+        uniqueId: "demo",
+        locations: {"School", "Work", "Jail", "Mortal Peril", "Bar", "Traveling", "Home"},
+        people: ["Harry","Ron","Hermione"],
+    },
+},
+```
+
+<br><img src=images/status_success.png border=1 height=400>
 ### Dependencies
 * A working installation of [Magic Mirror](https://github.com/MichMich/MagicMirror)
 * `mqtt` to connect to the mosquitto message broker
 * `svg.js` to draw the clock
+* `Howler` to play the sound file
 
 ## How it works
 The basic operational flow goes like this:
@@ -39,8 +55,49 @@ enter a unique ID, everyone who uses the same ID will be able to see your moveme
     },
 },
 ```
+## Installation on Your Phone
+OwnTracks is a free (as in beer) application for your mobile phone. Go to the Google Play Store or the iTunes store and search for OwnTracks. Install the app and then open it, just like you were installing Candy Crush.
+
+On your computer, download the included certificate `weasley_mirror_ca.crt` from this repository and email it to yourself (or copy the file to your phone over USB).
+
+Once the app is open, click on the menu in the upper left and select Preferences at the bottom.<br><img src=images/menu.png height=400 border=1> <img src=images/preferences.png height=400 border=1>
+
+Press the Connect option and then configure the connection Mode to use MQTT.
+<br><img src=images/connection.png height=300 border=1><br>
+Configure the Host menu with the following values. Host=`weasleymirror.duckdns.org`, Port=`8883`. Do not use websockets.
+<br><img src=images/host.png height=200 border=1><br>
+Configure the Identification with values unique to you. The fields in the OwnTracks app do not exactly match up to the module's terminology. So here is what you put in each field:
+* `Username` = Your unique ID from the module configuration. Any alphanumeric string, may not contain spaces.
+* `Password` = Make up a password. It doesn't matter.
+* `Device ID` = The name of the person using this phone. A single word, no spaces. This must match one of the entries in the `people` array in your module configuration.
+* `Tracker ID` = A two-character identifier. Can be any 2 alphanumeric characters.
+
+<br><img src=images/identification.png border=1 height=200><br>
+Configure the app security by giving it the certificate file that you emailed to yourself. First, click on the file attachment to download it to your phone.
+<br><img src=images/email_cert.png border=1 height=400><br>
+Once the cert is downloaded, specify the cert in the security configuration. You will be able to pick the file from your phone's file system here. You should leave the last two fields blank.
+<br><img src=images/security.png border=1 height=200><br>
+Finally, configure the client to use a clean session. (basically, have no memory of previous connections)<br>
+<img src=images/parameters.png border=1 height=200><br>
+Once everything is complete, you can go back to the Preferences menu and click on the Status menu item and see Connected at the top.<br>
+<img src=images/status_success.png border=1 height=300>
+
+Whew! At this point, you are connected to my MQTT server, but your phone doesn't know anything about the locations you specified in the `config.js`. Specifying a location in OwnTracks is currently rather cumbersome, but it's worth it when you're done.
+
+You need to create Regions in OwnTracks that match to the locations you wish to display in your Weasley Clock. 
+### Adding Regions to OwnTracks
+In order for the module to work, the OwnTracks app will need to know the location of each location you're displaying in the module. So you'll need:
+- The list of locations that you configured for your mirror.
+- The longitude & latitude for each of those locations.
+
+Note: The locations can be different for each phone. For example, my wife and I both have "Work" configured on our phones, but we have different long/lat configured. As our respect phones enter the different regions, they each report that we have entered "Work" to the mirror.
+
+In the OwnTracks app, opent he menu and click on Regions. Click on the "+" button to add a new region. Enter the name of the location and the longitude & latitude. Add a radius to define the area that the phone will consider to be that location. 250 meters is a good starting point.
+<br><img src="images/regions.png" border=1 height=200> <img src=images/region_edit.png border=1 height=200>
+
 ### Table Mode
-If you wish to have a compact representation of the OwnTracks data, you can switch the display to a simple two-column table. It contains a list of the defined people and their interpreted location. This is good for smaller areas of the Magic Mirror interface. See the 
+<img src=images/table_mode.png border=1 height=200><br>
+If you wish to have a compact representation of the OwnTracks data, you can switch the display to a simple two-column table. It contains a list of the defined people and their interpreted location. This is good for smaller areas of the Magic Mirror interface. Table mode also will not play sounds when locations update.
 
 ## Configuration Options (Module)
 These are the options to configure the module. Configuring the OwnTracks application will be handled below.
@@ -74,13 +131,18 @@ These are the options to configure the module. Configuring the OwnTracks applica
         <br><b>Default: </b>clock
     </td>
 </tr>
+<tr><td><b>sounds</b></td>
+    <td><b>Description: </b>Turns on or off the sound that plays when the hands move position. Sound does not play in table mode.
+        <br><b>Default: </b>true
+    </td>
+</tr>
 <tr><td><b>debug</b></td>
     <td><b>Description: </b>Turns on verbose logging in both the browser console and the node console. Warning: I'm a bit verbose.
         <br><b>Default: </b>false
     </td>
 </tr>
 <tr><td><b>host</b></td>
-    <td><b>Description: </b>The URI of the message broker. This is where the module will listen for messages from OwnTracks.
+    <td><b>Description: </b>The URL of the MQTT server (aka, the message broker). This is where the module will listen for messages from OwnTracks.
         <br><b>Default: </b>weasleymirror.duckdns.org
         <br><b>Note:</b> The module defaults to using TLS security. If you change this value, you will also have to provide your own certificates.
     </td>
