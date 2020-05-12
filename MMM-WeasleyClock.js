@@ -215,8 +215,9 @@ Module.register("MMM-WeasleyClock", {
 		try {
 			person.rotationLock = true;
 			var curRotate = hand.transform().rotate;
-			var newPoint = newLoc.point;
-			var locRotate = Math.atan2(newPoint.cy(),newPoint.cx()) * 180 / Math.PI;
+			// var newPoint = newLoc.point;
+			// var locRotate = Math.atan2(newPoint.cy(),newPoint.cx()) * 180 / Math.PI;
+			var locRotate = newLoc.angle;
 			if (this.config.debug) { console.log("Hand is at " + Math.round(curRotate) + ", loc is at " + Math.round(locRotate)); }
 			if (curRotate < locRotate) {
 				newRotate = Math.abs(curRotate - locRotate);
@@ -226,7 +227,7 @@ Module.register("MMM-WeasleyClock", {
 			newRotate = Math.round(newRotate);
 
 			console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
-			person.point = newLoc;
+			person.location = newLocation;
 			hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
 
 			// Lock out hand rotation for ten seconds to prevent double-taps.
@@ -243,15 +244,20 @@ Module.register("MMM-WeasleyClock", {
 	 * @param {Object} data The Owntracks message for evaluation
 	 */
 	processTraveling: function(name, data) {
-		if (this.locationMap.get(name) != null) {
-			// if (this.config.debug) { console.log(name + " is traveling."); }
-			this.locationMap.set(name,"Traveling");
+		var person = this.peopleMap.get(name);
+		if (person == undefined) {
+			console.log(name + " is not one of us. Shun the unbeliever!");
+			return;
+		}
+
+		if (person.location != "Traveling") {
+			if (this.config.debug) { console.log(name + " is traveling."); }
+			person.location = "Traveling";
 			if (this.config.clockStyle=="table") { this.updateDom(); }
 			else { this.rotateHand(name, "Traveling"); }
 		} else if (this.config.debug) {
-			console.log(name + " is not one of us. Goodbye.");
+			console.log("Duplicate assignment of " + name + " to Traveling");
 		}
-
 	},
 
 	/**
@@ -259,14 +265,20 @@ Module.register("MMM-WeasleyClock", {
 	 * @param {*} name Name of the tracked person
 	 */
 	processLost: function(name) {
-		if (this.locationMap.get(name) != null) {
+		var person = this.peopleMap.get(name);
+		if (person == undefined) {
+			console.log(name + " is not one of us. Shun the unbeliever!");
+			return;
+		}
+
+		if (person.location != "Lost") {
 			if (this.config.debug) { console.log(name + " is now lost. :("); }
-			this.locationMap.set(name,"Lost");
+			person.location = "Lost";
 			if (this.config.clockStyle=="table") { this.updateDom(); }
 			else { this.rotateHand(name, "Lost"); }
 
 		} else if (this.config.debug) {
-			console.log(name + " is not one of us. Shun the unbeliever!");
+			console.log("Duplicate assignment of " + name + "to Lost");
 		}
 	},
 
@@ -275,7 +287,7 @@ Module.register("MMM-WeasleyClock", {
 	 * defined region. Can't guarantee that these happen every time.
 	 * Note: You can be in multiple regions. We're only evaluating the first one.
 	 * @param {String} name Name of the person entering/leaving
-	 * @param {Object} data Message traffic
+	 * @param {Object} data Message traffic to be evaluated
 	 */
 	processUpdate: function(name, data) {
 		var person = this.peopleMap.get(name);
@@ -284,19 +296,33 @@ Module.register("MMM-WeasleyClock", {
 			console.log("Processing location update for '" + name + "'");
 			console.log("Regions: " + data.inregions);
 		}
-		var locName = data.inregions[0];
-		if (locName == "" || locName == undefined) { return; } // shouldn't happen but you never know
-		if (person == undefined) { console.log(name + " not found in list."); return; }
 
-		location = this.locationMap.get(locName);
+		// select first configured region
+		for (i=0; i < data.inregions.length; i++) {
+			location = this.locationMap.get(data.inregions[i]);
+			if (location != undefined) { break; }
+		}
+
+		if (person == undefined) {
+			console.log(name + " not found in list.");
+			return;
+		}
+
 		if (location == undefined) { // people in unknown locations are lost
 			this.processLost(name);
-			if (this.config.debug) { console.log("Location '" + locName + "' not found."); }
+			if (this.config.debug) { console.log("Location '" + data.inregions[0] + "' not found."); }
 		} else { // found name, location.
+
+			// avoid updates on duplicate data
+			if (person.location == location.name) {
+				if (this.config.debug) { console.log("Duplicate location received for " + name); }
+				return;
+			}
+
 			if (this.config.debug) { console.log("Found matching location."); }
 
 			if (this.config.clockStyle == "table") { this.updateDom();}
-			else {this.rotateHand(name, locName);}
+			else {this.rotateHand(name, location.name);}
 		}
 	},
 
