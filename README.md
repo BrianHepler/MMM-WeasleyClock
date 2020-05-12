@@ -136,10 +136,20 @@ These are the options to configure the module. Configuring the OwnTracks applica
         <br><b>Default: </b>["Harry","Ron","Ginny"]
     </td>
 </tr>
+<tr><td><b>colorCycle</b></td>
+    <td><b>Description: </b>An array of color names that will be used for the hands.
+        <br><b>Default: </b>["blue","green","yellow","purple","red","white","gray"]
+    </td>
+</tr>
 <tr><td><b>radius</b></td>
     <td><b>Description: </b>The radius of the circle that defines the positioning of the locations around a central point. Adjust this to tighten up or expand your clock size.
         <br><b>Default: </b>85
         <br><b>Note: </b>Has no effect on the table display.
+    </td>
+</tr>
+<tr><td><b>hubDisplacement</b></td>
+    <td><b>Description: </b>The space between the center point and the beginning of each hand.
+        <br><b>Default: </b>5
     </td>
 </tr>
 <tr><td><b>clockStyle</b></td>
