@@ -13,7 +13,7 @@
 	font-weight: 100;
   
 	src:
-	  local("calligraphica"),
+	  local("Calligraphica"),
 	  url("fonts/Kingthings_Calligraphica_2.ttf") format("truetype");
   
   }
@@ -26,3 +26,13 @@
 	font-family: cursive;
 }
 
+.MMM-WeasleyClock .location {
+	font-family: "Calligraphica", "satisfy", cursive;
+	font-size: 0.5em;
+	text-anchor: middle;
+}
+
+.MMM-WeasleyClock .hand {
+	font-family: "Calligraphica", "satisfy", cursive;
+	font-size: 0.5em;
+}

@@ -130,6 +130,7 @@ Module.register("MMM-WeasleyClock", {
 			var draw = SVG().addTo(wrapper).size("100%","100%");
 			draw.viewbox(-150, -150, 300, 300);
 			draw.className = "svgbox";
+			var yNudge = 7; // vertical nudge for text
 
 			// draw the center hub
 			// var hub = draw.circle("2%").fill("grey").stroke("1").cy(0).cx(0);
@@ -148,13 +149,11 @@ Module.register("MMM-WeasleyClock", {
 
 				var locText = draw.text(location.name).fill("white");
 				locText.attr("id","locName-" + location.name);
-				locText.className = "location";
+				locText.addClass("location");
 				locText.font({
 					anchor: "middle",
-					size: "small",
-					family: "calligraphica, satisfy, cursive"
 				});
-				locText.cx(cordx).cy(cordy);
+				locText.cx(cordx).cy(cordy - yNudge);
 				location.textSVG = locText;
 				i++;
 			}
@@ -360,14 +359,10 @@ Module.register("MMM-WeasleyClock", {
 
 	createHand: function(svg, name) {
 		var pplHand = svg.text(name + " ->").id("hand" + name);
-		pplHand.attr({
-			"id": "hand"+name,
-			"classname": "hand"
-		});
+		pplHand.addClass("hand");
+		// for some reason, these must be set here and not in the CSS
 		pplHand.font({
-			family: "calligraphica, satisfy, cursive",
-			anchor: "left",
-			size: "medium"
+			anchor: "left"
 		});
 
 		pplHand.click(function(location) {
