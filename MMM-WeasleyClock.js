@@ -181,20 +181,19 @@ Module.register("MMM-WeasleyClock", {
 	rotateHand: function(name, newLocation) {
 		// var handID = "hand" + name;
 		// var locID = "loc" + location;
-		var hand, curLoc, newLoc, newRotate, person;
+		var hand, newLoc, newRotate, person;
 
-		person = peopleMap.get(name);
+		person = this.peopleMap.get(name);
 		if (person == undefined) {
 			return;
 		}
 		else {
 			hand = person.handSVG;
-			curLoc = person.point;
 		}
 
 		if (person.rotationLock) { return; }
 
-		newLoc = locationMap.get(newLocation);
+		newLoc = this.locationMap.get(newLocation);
 		if (newLoc != undefined && this.config.debug) { console.log("Found point for " + newLoc.name); }
 
 		// play sounds
@@ -216,7 +215,8 @@ Module.register("MMM-WeasleyClock", {
 		try {
 			person.rotationLock = true;
 			var curRotate = hand.transform().rotate;
-			var locRotate = Math.atan2(newLoc.cy(),newLoc.cx()) * 180 / Math.PI;
+			var newPoint = newLoc.point;
+			var locRotate = Math.atan2(newPoint.cy(),newPoint.cx()) * 180 / Math.PI;
 			if (this.config.debug) { console.log("Hand is at " + Math.round(curRotate) + ", loc is at " + Math.round(locRotate)); }
 			if (curRotate < locRotate) {
 				newRotate = Math.abs(curRotate - locRotate);
@@ -226,12 +226,13 @@ Module.register("MMM-WeasleyClock", {
 			newRotate = Math.round(newRotate);
 
 			console.log("Rotating: " + Math.round(curRotate) + " to " + Math.round(locRotate) + " (" + newRotate + ")");
+			person.point = newLoc;
 			hand.animate(1500,500,"now").rotate(newRotate, 0, 0);
 
 			// Lock out hand rotation for ten seconds to prevent double-taps.
 			setInterval(function() { person.rotationLock = false;}, 1000 * 10);
 		} catch (e) {
-			console.debug("Unable to rotate hand for " + name + " to " + location);
+			console.log("Unable to rotate hand for " + name + " to " + location,e);
 		}
 
 	},
@@ -277,35 +278,25 @@ Module.register("MMM-WeasleyClock", {
 	 * @param {Object} data Message traffic
 	 */
 	processUpdate: function(name, data) {
-		var person, location;
+		var person = this.peopleMap.get(name);
+		var location;
 		if (this.config.debug) {
 			console.log("Processing location update for '" + name + "'");
 			console.log("Regions: " + data.inregions);
 		}
 		var locName = data.inregions[0];
 		if (locName == "" || locName == undefined) { return; } // shouldn't happen but you never know
-
-		for (j=0; j < this.peopleList.length; j++) {
-			if (this.peopleList[j].name == name) {
-				person = this.peopleList[j];
-			}
-		}
-
 		if (person == undefined) { console.log(name + " not found in list."); return; }
 
-		for (i=0; i < this.locationList.length; i++) {
-			var location = locationList[i];
-			if (this.locationList[i].name == locName) {
-				if (this.config.debug) { console.log("Found! Updating location map."); }
-				// this.locationMap.set(name,loc);
-				
-				if (this.config.clockStyle == "table") { this.updateDom();}
-				else {this.rotateHand(name, loc);}
-				
-			} else { // people in unknown locations are lost
-				this.processLost(name);
-				if (this.config.debug) { console.log("Location '" + loc + "' not found."); }
-			}
+		location = this.locationMap.get(locName);
+		if (location == undefined) { // people in unknown locations are lost
+			this.processLost(name);
+			if (this.config.debug) { console.log("Location '" + locName + "' not found."); }
+		} else { // found name, location.
+			if (this.config.debug) { console.log("Found matching location."); }
+
+			if (this.config.clockStyle == "table") { this.updateDom();}
+			else {this.rotateHand(name, locName);}
 		}
 	},
 
@@ -340,13 +331,6 @@ Module.register("MMM-WeasleyClock", {
 		}
 		// this.updateDom();
 	},
-
-	roundValue: function(value) {
-		if (this.config.roundValue) {
-		  value = parseFloat(value).toFixed(this.config.decimals);
-		}
-		return value;
-	  },
 
 	createHand: function(svg, name) {
 		var pplHand = svg.text(name + " ->").id("hand" + name);
