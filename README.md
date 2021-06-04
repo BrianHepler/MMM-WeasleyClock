@@ -28,7 +28,7 @@ Modify your `config.js` file to include the module.
     position: "middle_center",
     config: {
         uniqueId: "demo",
-        locations: {"School", "Work", "Jail", "Mortal Peril", "Bar", "Traveling", "Home"},
+        locations: ["School", "Work", "Jail", "Mortal Peril", "Bar", "Traveling", "Home"],
         people: ["Harry","Ron","Hermione"],
     },
 },
@@ -61,7 +61,7 @@ enter a unique ID, everyone who uses the same ID will be able to see your moveme
     position: "middle_center",
     config: {
         uniqueId: "CowboysDude",
-        locations: {"School", "Work", "Jail", "Mortal Peril", "Bar", "Traveling", "Home"},
+        locations: ["School", "Work", "Jail", "Mortal Peril", "Bar", "Traveling", "Home"],
         people: ["Cowboy","Cowgirl","Rustler"],
     },
 },
