@@ -87,7 +87,7 @@ module.exports = NodeHelper.create({
 	 */
 	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
+		// var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
 			username: config.uniqueId,
@@ -95,8 +95,7 @@ module.exports = NodeHelper.create({
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
-			clean: true,
-			ca: caFile
+			clean: true
 		};
 
 		console.debug(options);
