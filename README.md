@@ -201,7 +201,10 @@ Start with the list of locations that you defined in the `locations` parameter i
 * Add a radius in the last field of the region, measured in meters. 250 meters is pretty good.
 * Click on the check mark icon at the top to save your region
 
-## Architecture
+## If You Want to Use Your Own MQTT Server
+You don't have to use my MQTT server. You are welcome to set up your own. I have a separate page on [how to set up Mosquitto](MosquittoSetup.md) on your Magic Mirror so you can keep your data to yourself.
+
+## How It Works
 The basic operational flow goes like this:
 * The OwnTracks mobile app uses your phone's location services to figure out 
 where you are and if you are in a defined area. 

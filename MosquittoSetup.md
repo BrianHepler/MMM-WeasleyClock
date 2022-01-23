@@ -51,6 +51,18 @@ allow_zero_length_clientid false
 ```
 
 And then restart your mosquitto service to implement your configuration changes: `sudo service mosquitto restart`
+## Configure the Module to Use Your Server
+It's pretty simple. Modify the module configuration in the Magic Mirror `config.js` file to point to you new Mosquitto server:
+```
+{
+    module: "MMM-WeasleyClock",
+    position: "middle_center",
+    config: {
+        uniqueId: "AllMine",
+        host: "127.0.0.1",
+    },
+},
+```
 
 ## Configure the Pi to be the endpoint for a DNS entry
 If you have a domain pointed at your Magic Mirror, you can skip ahead. You don't need my help.
@@ -76,9 +88,9 @@ Simple, right?
 ## Implementing Usernames & Passwords
 Controlling access to your Mosquitto instance will prevent people from downloading OwnTracks, signing into your server and then listening to every location message that comes through. Easiest way to prevent that is to require a username/password combination.
 
-First, create a text file with the plain text username:passwords that you’ll be using. You need one for each name being displayed, plus one for the mirror itself. Best to put the new file in the `/etc/mosquito/` folder and call it `passwdfile` or whatever. For example, if your `UniqueId` was “Weasleys”, you would enter:
+First, create a text file with the plain text username:passwords that you’ll be using. You need one for each name being displayed, plus one for the mirror itself. Best to put the new file in the `/etc/mosquito/` folder and call it `passwdfile` or whatever. For example:
 ```
-mirror-Weasleys:MirrorPassword1
+WeasleyModule:MirrorPassword1
 Harry:Patronus
 Hermionie:Freedom4Elves
 Ron:ButterBeer
@@ -97,6 +109,18 @@ password_file /etc/mosquitto/passwdfile
 ```
 You can restart Mosquitto to pick up the configuration change with `sudo service mosquitto restart`
 
+You will need to add the module's username and password to the configuration:
+```
+{
+    module: "MMM-WeasleyClock",
+    position: "middle_center",
+    config: {
+        uniqueId: "Weasleys",
+        mirrorUser: "WeasleyModule",
+        mirrorPass: "MirrorPassword1",
+    },
+},
+```
 All right. That should keep the riffraff out.
 
 ### Modify Your OwnTracks to Use the Username & Password
