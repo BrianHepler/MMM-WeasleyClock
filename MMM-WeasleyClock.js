@@ -22,10 +22,11 @@ Module.register("MMM-WeasleyClock", {
     host: "weasleymirror.duckdns.org",
     port: 8883,
     uniqueId: "notunique",
+    mirrorUser: null,
+    mirrorPass: null,
     clockStyle: "clock",
     radius: 85,
-    hubDisplacement: 5,
-    cafile: "weasley_mirror_ca.crt"
+    hubDisplacement: 5
   },
 
   rotationLock: false,
@@ -64,7 +65,7 @@ Module.register("MMM-WeasleyClock", {
 
     // Set people to default location and load the map
     for (n = 0; n < people.length; n++) {
-      console.log("Processing person: " + people[n]);
+      Log.info("Processing person: " + people[n]);
       var person = new Object();
       person.location = "Lost";
       person.name = people[n];
@@ -170,7 +171,7 @@ Module.register("MMM-WeasleyClock", {
         person.handSVG = hand;
         j++;
         if (this.config.debug) {
-          console.log("Added hand: " + hand.id());
+          Log.debug("Added hand: " + hand.id());
         }
       }
     }
@@ -200,7 +201,7 @@ Module.register("MMM-WeasleyClock", {
 
     newLoc = this.locationMap.get(newLocation);
     if (newLoc != undefined && this.config.debug) {
-      console.log("Found point for " + newLoc.name);
+      Log.debug("Found point for " + newLoc.name);
     }
 
     // play sounds
@@ -213,12 +214,12 @@ Module.register("MMM-WeasleyClock", {
           ],
           volume: this.config.volume,
           onend: function () {
-            console.log("Sound playback complete!");
+            Log.debug("Sound playback complete!");
           }
         });
         sound.play();
       } catch (e) {
-        console.debug(e);
+        console.err(e);
       }
     }
 
@@ -229,7 +230,7 @@ Module.register("MMM-WeasleyClock", {
       // var locRotate = Math.atan2(newPoint.cy(),newPoint.cx()) * 180 / Math.PI;
       var locRotate = newLoc.angle;
       if (this.config.debug) {
-        console.log(
+        Log.debug(
           "Hand is at " +
             Math.round(curRotate) +
             ", loc is at " +
@@ -243,7 +244,7 @@ Module.register("MMM-WeasleyClock", {
       }
       newRotate = Math.round(newRotate);
 
-      console.log(
+      Log.debug(
         "Rotating: " +
           Math.round(curRotate) +
           " to " +
@@ -260,7 +261,7 @@ Module.register("MMM-WeasleyClock", {
         person.rotationLock = false;
       }, 1000 * 10);
     } catch (e) {
-      console.log("Unable to rotate hand for " + name + " to " + location, e);
+      Log.err("Unable to rotate hand for " + name + " to " + location, e);
     }
   },
 
@@ -272,22 +273,20 @@ Module.register("MMM-WeasleyClock", {
   processTraveling: function (name, data) {
     var person = this.peopleMap.get(name);
     if (person == undefined) {
-      console.log(name + " is not one of us. Shun the unbeliever!");
+      Log.info(name + " is not one of us. Shun the unbeliever!");
       return;
     }
 
     if (person.location != "Traveling") {
-      if (this.config.debug) {
-        console.log(name + " is traveling.");
-      }
+      Log.debug(name + " is traveling.");
       person.location = "Traveling";
       if (this.config.clockStyle == "table") {
         this.updateDom();
       } else {
         this.rotateHand(name, "Traveling");
       }
-    } else if (this.config.debug) {
-      console.log("Duplicate assignment of " + name + " to Traveling");
+    } else {
+      Log.debug("Duplicate assignment of " + name + " to Traveling");
     }
   },
 
@@ -298,22 +297,21 @@ Module.register("MMM-WeasleyClock", {
   processLost: function (name) {
     var person = this.peopleMap.get(name);
     if (person == undefined) {
-      console.log(name + " is not one of us. Shun the unbeliever!");
+      Log.info(name + " is not one of us. Shun the unbeliever!");
       return;
     }
 
     if (person.location != "Lost") {
-      if (this.config.debug) {
-        console.log(name + " is now lost. :(");
-      }
+      Log.debug(name + " is now lost. :(");
+      
       person.location = "Lost";
       if (this.config.clockStyle == "table") {
         this.updateDom();
       } else {
         this.rotateHand(name, "Lost");
       }
-    } else if (this.config.debug) {
-      console.log("Duplicate assignment of " + name + "to Lost");
+    } else {
+      Log.debug("Duplicate assignment of " + name + "to Lost");
     }
   },
 
@@ -327,10 +325,9 @@ Module.register("MMM-WeasleyClock", {
   processUpdate: function (name, data) {
     var person = this.peopleMap.get(name);
     var location;
-    if (this.config.debug) {
-      console.log("Processing location update for '" + name + "'");
-      console.log("Regions: " + data.inregions);
-    }
+    
+    Log.debug("Processing location update for '" + name + "'");
+    Log.debug("Regions: " + data.inregions);
 
     // select first configured region
     for (i = 0; i < data.inregions.length; i++) {
@@ -341,30 +338,25 @@ Module.register("MMM-WeasleyClock", {
     }
 
     if (person == undefined) {
-      console.log(name + " not found in list.");
+      Log.info(name + " not found in list.");
       return;
     }
 
     if (location == undefined) {
       // people in unknown locations are lost
+      Log.debug("Location '" + data.inregions[0] + "' not found.");
       this.processLost(name);
-      if (this.config.debug) {
-        console.log("Location '" + data.inregions[0] + "' not found.");
-      }
+      
     } else {
       // found name, location.
 
       // avoid updates on duplicate data
       if (person.location == location.name) {
-        if (this.config.debug) {
-          console.log("Duplicate location received for " + name);
-        }
+        Log.debug("Duplicate location received for " + name);
         return;
       }
 
-      if (this.config.debug) {
-        console.log("Found matching location.");
-      }
+      Log.debug("Found matching location.");
 
       if (this.config.clockStyle == "table") {
         this.updateDom();
@@ -382,11 +374,8 @@ Module.register("MMM-WeasleyClock", {
    * @override
    */
   socketNotificationReceived: function (notification, payload) {
-    if (this.config.debug) {
-      console.log(
-        "Received notification '" + notification + "' from Weasley helper."
-      );
-    }
+    Log.debug("Received notification '" + notification + "' from Weasley helper.");
+    
     this.loaded = true;
     this.mqttVal = payload;
 
@@ -417,7 +406,7 @@ Module.register("MMM-WeasleyClock", {
     });
 
     pplHand.click(function (location) {
-      console.log("rotating hand " + pplHand.id);
+      Log.debug("rotating hand " + pplHand.id);
     });
     return pplHand;
   },

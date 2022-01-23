@@ -58,6 +58,7 @@ module.exports = NodeHelper.create({
 
 	establishConnection: function(config) {
 		var subTopic = "owntracks/" + config.uniqueId;
+
 		if (this.client == null) {
 			this.client = this.getMQTTClient(config);
 			// handle the events from the MQTT server
@@ -87,11 +88,14 @@ module.exports = NodeHelper.create({
 	 */
 	getMQTTClient: function(config) {
 		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		// var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
+
+		var userName = ((config.mirrorUser == null) ? "mirror-" + config.uniqueId : config.mirrorUser );
+		var userPass = ((config.mirrorPass == null) ? "BogusPassword" : config.mirrorPass );
+
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
-			username: config.uniqueId,
-			password: "Get_Out_Of_My_Code",
+			username: userName,
+			password: userPass,
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
