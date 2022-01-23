@@ -13,23 +13,20 @@ I installed an MQTT server called Mosquitto on an original Raspberry Pi that I h
 
 The overall steps aren't all that hard:
 * Install and configure Mosquitto on the Pi
-* Configure the Pi to be the target for a named web address (optional but recommended)
 * Point the phone(s) and the Magic Mirror(s) at the Mosquitto server
 
-## Install the Latest Version of Mosquitto on your Pi
-Raspbian has an older version of Mosquitto included in the repository. We're going to add a repository with the latest version. Details taken from [Link](https://mosquitto.org/blog/2013/01/mosquitto-debian-repository/)
-```
-wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
-sudo apt-key add mosquitto-repo.gpg.key
-cd /etc/apt/sources.list.d/
-sudo wget http://repo.mosquitto.org/debian/mosquitto-buster.list
-sudo apt update
-sudo apt install mosquitto
-```
+Optional steps:
+* Configure the Pi to be the target for a named web address
+* Set up usernames & passwords for your Mosquitto server
 
+## Install Mosquitto on your Pi
 This will install the Mosquitto MQTT server and configure it to start up as a service whenever the Pi boots.
+```
+sudo apt update
+sudo apt install mosquitto -y
+```
 
-Configuring the MQTT server is pretty easy. Edit the file `/etc/mosquitto/conf.d/local.conf` and make a couple changes:
+Configuring the MQTT server is pretty easy. Switch to the root user and create the file `/etc/mosquitto/conf.d/local.conf` as such:
 ```
 listener 8883
 persistence_location /home/pi/
@@ -53,6 +50,8 @@ allow_duplicate_messages false
 allow_zero_length_clientid false
 ```
 
+And then restart your mosquitto service to implement your configuration changes: `sudo service mosquitto restart`
+
 ## Configure the Pi to be the endpoint for a DNS entry
 If you have a domain pointed at your Magic Mirror, you can skip ahead. You don't need my help.
 
@@ -62,14 +61,11 @@ There are other services that will give you power over your domain. This process
 
 Once the DNS entry is pointed at your house, you will need to log in to your router and forward one of the ports to the Pi. There are several articles on how to do this, but I would head over to [Link](https://portforward.com) first. You need to **forward port 8883 to your Pi's IP address*** on your home network.
 
-
-
 At this point, you can start to install OwnTracks on your phone(s) and point them at your Mosquitto installation's web address. It's not a bad idea to stop right here and configure the phone(s) and Magic Mirror. This way you can test the rest of the system.
 
 
 ### Optional: Use enhanced security
 I'm not going to tell you how to secure your stuff. But OwnTracks will broadcast your location and the location of your family unencrypted across the Internet unless you lock it down a bit. These steps are optional but highly encouraged. There are some optional tasks available, included below in order of increased security.
-
 
 * Implement usernames & passwords on your Mosquitto instance
 * Configure the phone(s) to use the username & passwords & SSL connections
@@ -118,13 +114,11 @@ We're going to use Let's Encrypt and their automated application to create, down
 4. When prompted, enter your email address.
 
 
-## Lock down the Mosquitto server to use certificates
-Add to the Mosquitto configuration file `local.conf`: 
+### Lock down the Mosquitto server to use certificates
+Add to the Mosquitto configuration file `/etc/mosquitto/conf.d/local.conf`: 
 ```
 # Security TLS information
 cafile /etc/letsencrypt/live/[your subdomain here].duckdns.org/chain
 keyfile /etc/letsencrypt/live/[your subdomain here].duckdns.org/privkey.pem
 certfile /etc/letsencrypt/live/[your subdomain here].duckdns.org/cert.pem
 ```
-
-

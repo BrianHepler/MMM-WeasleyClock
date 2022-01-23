@@ -8,13 +8,12 @@ This module was inspired by the Instructable [Build Your Own Weasley Location Cl
 2. [Configuring the Module](#Configuration)
 3. [Installing OwnTracks on Your Phone](#Owntracks)
 4. [Adding Locations to Your Phone](#regions)
-5. [Table Mode](#Alternate)
-6. [If You Want to Use Your Own MQTT Server](#development)
-7. [How it Works](#Architecture)
-8. [Upcoming Features](#todo)
+5. [If You Want to Use Your Own MQTT Server](#development)
+6. [How it Works](#Architecture)
+7. [Upcoming Features](#todo)
 
 ## Installation
-Installation of the Magic Mirror module is similar to all other modules:
+Installation of the Magic Mirror module is similar to all other Magic Mirror modules:
 ```
 cd /home/pi/MagicMirror/modules
 git clone https://github.com/BrianHepler/MMM-WeasleyClock
@@ -28,8 +27,6 @@ Modify your `config.js` file to include the module.
     position: "middle_center",
     config: {
         uniqueId: "demo",
-        locations: ["School", "Work", "Jail", "Mortal Peril", "Bar", "Home"],
-        people: ["Harry","Ron","Hermione"],
     },
 },
 ```
@@ -42,22 +39,16 @@ Your configuration needs to contain a unique identifier that will separate your 
     module: "MMM-WeasleyClock",
     position: "middle_center",
     config: {
-        uniqueId: "CowboyFamily",
+        uniqueId: “MovieFamily”,
         locations: ["School", "Work", "Jail", "Mortal Peril", "Bar", "Home"],
-        people: ["Cowboy","Cowgirl","Rustler"],
+        people: ["Harry","Ron","Hermione",”Ginny”],
     },
 },
 ```
 See the [full list of options](#configoptions).
 
-### Dependencies
-* A working installation of [Magic Mirror](https://github.com/MichMich/MagicMirror)
-* `mqtt` to connect to the mosquitto message broker (loaded via npm)
-* `svg.js` to draw the clock (loaded via npm)
-* `Howler` to play the sound file (loaded via npm)
-
 ## Installation on Your Phone
-OwnTracks is a free (as in beer) application for your mobile phone. Go to the Google Play Store or the iTunes store and search for OwnTracks. Install the app and then open it, just like you were installing Candy Crush.
+OwnTracks is a free application for your mobile phone. Go to the Google Play Store or the iTunes store and search for OwnTracks. Install the app and then open it, just like you were installing Candy Crush.
 
 Once the app is open, click on the menu in the upper left and select Preferences at the bottom.<br><img src=images/menu.png height=400 border=1> <img src=images/preferences.png height=400 border=1>
 
@@ -79,6 +70,7 @@ Finally, configure the client to use a clean session. (basically, have no memory
 Once everything is complete, you can go back to the Preferences menu and click on the Status menu item and see Connected at the top.<br>
 <img src=images/status_success.png border=1 height=300>
 
+
 Whew! At this point, you are connected to my MQTT server, but your phone doesn't know anything about the locations you specified in the `config.js`. Specifying a location in OwnTracks is currently rather cumbersome, but it's worth it when you're done.
 
 You need to create Regions in OwnTracks that match to the locations you wish to display in your Weasley Clock.
@@ -88,14 +80,10 @@ In order for the module to work, the OwnTracks app will need to know the locatio
 - The list of locations that you configured for your mirror.
 - The longitude & latitude for each of those locations.
 
-Note: The locations can be different for each phone. For example, my wife and I both have "Work" configured on our phones, but we have different long/lat configured. As our respect phones enter the different regions, they each report that we have entered "Work" to the mirror.
+Note: The locations can be different for each phone. For example, my wife and I both have "Work" configured on our phones, but we have different long/lat configured. As our respective phones enter the different regions, they each report that we have entered "Work" to the mirror.
 
 In the OwnTracks app, opent he menu and click on Regions. Click on the "+" button to add a new region. Enter the name of the location and the longitude & latitude. Add a radius to define the area that the phone will consider to be that location. 250 meters is a good starting point.
 <br><img src="images/regions.png" border=1 height=200> <img src=images/region_edit.png border=1 height=200>
-
-### Alternate
-<img src=images/table_mode.png border=1 height=200><br>
-If you wish to have a compact representation of the OwnTracks data, you can switch the display to a simple two-column table. It contains a list of the defined people and their interpreted location. This is good for smaller areas of the Magic Mirror interface. Table mode also will not play sounds when locations update.
 
 <a href="#configoptions"></a>
 ## Configuration Options (Module)
@@ -106,16 +94,16 @@ These are the options to configure the module. Configuring the OwnTracks applica
 <tr><td><b>uniqueId</b></td>
     <td><b>Description: </b>The unique identifier shared between your instance of the MMM-WeasleyClock module and your OwnTracks apps. This value must also be set in the OwnTracks app in the Username field. (Capitalization is important!)
         <br><b>Default: </b>"notunique"
-        <br>Note: Leaving this unchanged will allow everyone else with this module to see your locations.
+        <br>Note: Leaving this unchanged will allow everyone else with this module to see your locations on their cell phones.
     </td>
 </tr>
-<tr><td><b>Locations</b></td>
+<tr><td><b>locations</b></td>
     <td><b>Description: </b>An array of location names. These are the possible locations that the module will display. They must match the names of the regions you define in the OwnTracks application. (Capitalization is important!)
         <br><b>Default: </b>["Home","School","Work","Mortal Peril","Jail","Food"]
         <br><b>Note</b>: There are two additional locations that are reserved: "Traveling" and "Lost". They will be included automatically.
     </td>
 </tr>
-<tr><td><b>People</b></td>
+<tr><td><b>people</b></td>
     <td><b>Description: </b>An Array of names. Each one will be represented by a hand on the clock. Each OwnTracks app must be configured with one of these names in the Device ID field. (Capitalization is important!)
         <br><b>Default: </b>["Harry","Ron","Ginny"]
     </td>
@@ -136,25 +124,33 @@ These are the options to configure the module. Configuring the OwnTracks applica
         <br><b>Default: </b>5
     </td>
 </tr>
-<tr><td><b>clockStyle</b></td>
-    <td><b>Description: </b>Controls the overall look of the module. Possible values are <b>"clock"</b> and <b>"table"</b>.
-        <br><b>Default: </b>clock
-    </td>
-</tr>
+
 <tr><td><b>sounds</b></td>
     <td><b>Description: </b>Turns on or off the sound that plays when the hands move position. Sound does not play in table mode.
         <br><b>Default: </b>true
     </td>
 </tr>
 <tr><td><b>debug</b></td>
-    <td><b>Description: </b>Turns on verbose logging in both the browser console and the node console. Warning: I'm a bit verbose.
+    <td><b>Description: </b>Turns on the debug messages logging in the node console. You can see this via an SSH connection & `pm2 log 0`
         <br><b>Default: </b>false
+        <br><b>Note: </b>I'm a bit verbose.
     </td>
 </tr>
 <tr><td><b>host</b></td>
     <td><b>Description: </b>The URL of the MQTT server (aka, the message broker). This is where the module will listen for messages from OwnTracks.
         <br><b>Default: </b>weasleymirror.duckdns.org
-        <br><b>Note:</b> The module defaults to using TLS security. If you change this value, you will also have to provide your own certificates.
+    </td>
+</tr>
+
+<tr><td><b>mirrorUser</b></td>
+    <td><b>Description: </b> If you are running your own MQTT server with password authentication, you can specify the username that the module uses to log in here.
+        <br><b>Default: </b> null
+    </td>
+</tr>
+
+<tr><td><b>mirrorPass</b></td>
+    <td><b>Description: </b> If you are running your own MQTT server with password authentication, you can specify the password that the module uses to log in here.
+        <br><b>Default: </b> null
     </td>
 </tr>
 <tr><td><b>port</b></td>
@@ -218,7 +214,14 @@ I am hosting an MQTT server for this module at weasleymirror.duckdns.org. You ar
 ## Development
 I've written up some advice to help over at the [Developer's Notes](developmentnotes.md). I've also included some debugging tips.
 
+### Dependencies
+* A working installation of [Magic Mirror](https://github.com/MichMich/MagicMirror)
+* `mqtt` to connect to the mosquitto message broker (loaded via npm)
+* `svg.js` to draw the clock (loaded via npm)
+* `Howler` to play the sound file (loaded via npm)
+
 ## ToDo
+* Get the table mode to work properly
 * Better graphics for the clock, including backgrounds and fancy hands
 * Third style of display, using [Flapper](https://github.com/jayKayEss/Flapper)
 * Add language translations for "Traveling" and "Lost"
