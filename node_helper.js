@@ -87,10 +87,11 @@ module.exports = NodeHelper.create({
 	 * @param {Object} config The configuration object as modified by the user
 	 */
 	getMQTTClient: function(config) {
-		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
+		console.log("Establishing mqtt connection using uniqueId: " + config.uniqueId);
 
 		var userName = ((config.mirrorUser == null) ? "mirror-" + config.uniqueId : config.mirrorUser );
 		var userPass = ((config.mirrorPass == null) ? "BogusPassword" : config.mirrorPass );
+		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
 
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
@@ -102,15 +103,15 @@ module.exports = NodeHelper.create({
 			clean: true
 		};
 
-		console.debug(options);
-		client = mqtt.connect("mqtts://" + config.host, options);
+		console.debug("Connecting with: " + options);
+		client = mqtt.connect(protocol + config.host, options);
 
 		return client;
 	},
 
 	// Process the messages received by the client
 	handleMessage: function(config, topic, message) {
-		console.debug(message);
+		console.debug("Message from front: " + message);
 
 		if (message == null) {
 			console.error("Null value from MQTT server.");

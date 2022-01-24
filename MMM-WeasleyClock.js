@@ -21,6 +21,7 @@ Module.register("MMM-WeasleyClock", {
     colorCycle: ["blue", "green", "yellow", "purple", "red", "white", "gray"],
     host: "weasleymirror.duckdns.org",
     port: 8883,
+    disableEncryption: false,
     uniqueId: "notunique",
     mirrorUser: null,
     mirrorPass: null,

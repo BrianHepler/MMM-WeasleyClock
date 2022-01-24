@@ -158,6 +158,12 @@ These are the options to configure the module. Configuring the OwnTracks applica
         <br><b>Default: </b>8883
     </td>
 </tr>
+
+<tr><td><b>disableEncryption</b></td>
+    <td><b>Description: </b>Set to true if you're running your own MQTT server without TLS.
+        <br><b>Default: </b>false
+    </td>
+</tr>
 </table>
 
 ## OwnTracks
