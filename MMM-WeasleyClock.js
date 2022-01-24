@@ -133,9 +133,8 @@ Module.register("MMM-WeasleyClock", {
 
       var i = 0;
       for (let location of locationMap.values()) {
-        if (this.config.debug) {
-          console.log("Placing " + location.name);
-        }
+        Log.debug("Placing " + location.name);
+        
         const plier = ((2 * Math.PI) / this.locationMap.size) * i;
 
         var cordx = Math.cos(plier) * this.config.radius;
@@ -171,9 +170,9 @@ Module.register("MMM-WeasleyClock", {
         person.color = this.config.colorCycle[j];
         person.handSVG = hand;
         j++;
-        if (this.config.debug) {
-          Log.debug("Added hand: " + hand.id());
-        }
+        
+        Log.debug("Added hand: " + hand.id());
+        
       }
     }
     return wrapper;
