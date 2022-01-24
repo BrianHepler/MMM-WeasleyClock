@@ -69,8 +69,13 @@ module.exports = NodeHelper.create({
 	
 				this.client.on("message", (topic, message) => {
 					console.log ("message received in topic " + topic);
-					var msgObj = JSON.parse(message.toString());
-					this.handleMessage(config, topic, msgObj);
+					try {
+						var msgObj = JSON.parse(message.toString());
+						this.handleMessage(config, topic, msgObj);
+					} catch (e) {
+						console.error("Error processing message: " + message.toString());
+					}
+
 				});
 			});
 	
