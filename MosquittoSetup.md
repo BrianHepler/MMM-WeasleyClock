@@ -28,14 +28,10 @@ sudo apt install mosquitto -y
 
 Configuring the MQTT server is pretty easy. Switch to the root user and create the file `/etc/mosquitto/conf.d/local.conf` as such:
 ```
-listener 8883
-persistence_location /home/pi/
-persistence_file mosquitto.db
-log_timestamp true
-log_timestamp_format %Y-%m-%dT%H:%M:%S
+port 8883
+
 log_dest syslog
 log_dest stdout
-log_dest file /home/pi/mosquitto.log
 log_type error
 log_type warning
 log_type information
