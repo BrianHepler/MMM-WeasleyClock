@@ -8,6 +8,33 @@ If you don't trust my MQTT server, you are welcome to stand up your own. I use [
 
 If you're going to attempt this, I highly recommend getting an MQTT client for your development workstation. I used [MQTT-Spy](https://github.com/eclipse/paho.mqtt-spy) and it works well for pushing messages as well as troubleshooting the TLS settings.
 
+## Compiling Mosquitto to fix SSL errors
+For some reason, the latest version of Mosquitto from the debian repository doesn't like Lets Encrypt certificates. I had to compile Mosquitto from source to do... something. 
+Still trying to remember exactly what. Anyhow, compiling Mosquitto requires some setup. **local compilation doesn't work***
+```
+sudo apt install git build-essential libssl-dev openssl cmake xstlproc docbook-xsl libsystemd-dev
+cd ~
+git clone https://github.com/eclipse/mosquitto.git
+cd mosquitto
+make WITH_WEBSOCKETS=no install 
+```
+
+Wait, no. Set up additional repository and install from repository. Must install Mosquitto 2.0.11, as newer versions use a busted websockets library. Otherwise, compile without websockets.
+```
+wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key
+sudo apt-key add mosquitto-repo.gpg.key
+cd /etc/apt/sources.list.d/
+sudo wget http://repo.mosquitto.org/debian/mosquitto-buster.list
+sudo apt update
+sudo apt install mosquitto=2.0.11-0mosquitto1~buster1 -y
+```
+
+Newer version of Mosquitto requires changes to the mosquitto configuration file at `/etc/mosquitto/config.d/local.conf`.
+```
+listener 8883
+
+```
+
 ## Future Features
 * Enable region definitions in module config to push regions to devices
 * Dynamically load new locations based upon waypoint definition messages

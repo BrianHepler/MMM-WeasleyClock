@@ -63,11 +63,11 @@ It's pretty simple. Modify the module configuration in the Magic Mirror `config.
 ## Configure the Pi to be the endpoint for a DNS entry
 If you have a domain pointed at your Magic Mirror, you can skip ahead. You don't need my help.
 
-I use [Link](www.duckdns.org) to give me a dynamic DNS entry. It's free and it has some room to grow in case I decide to do other silliness like this in the future. Once you sign up, you can create whatever subdomain name is meaningful to you. I already took weasleymirror.duckdns.org so you'll have to pick another one. Once you have signed up and received a subdomain of duckdns.org, follow the steps to install the DDNS update script on your router or on the Pi itself. I installed the updator on the Pi.
+I use [DuckDNS](www.duckdns.org) to give me a dynamic DNS entry. It's free and it has some room to grow in case I decide to do other silliness like this in the future. Once you sign up, you can create whatever subdomain name is meaningful to you. I already took weasleymirror.duckdns.org so you'll have to pick another one. Once you have signed up and received a subdomain of duckdns.org, follow the steps to install the DDNS update script on your router or on the Pi itself. I installed the updator on the Pi.
 
 There are other services that will give you power over your domain. This process should work with them too.
 
-Once the DNS entry is pointed at your house, you will need to log in to your router and forward one of the ports to the Pi. There are several articles on how to do this, but I would head over to [Link](https://portforward.com) first. You need to **forward port 8883 to your Pi's IP address*** on your home network.
+Once the DNS entry is pointed at your house, you will need to log in to your router and forward one of the ports to the Pi. There are several articles on how to do this, but I would head over to [PortForward.com](https://portforward.com) first. You need to **forward port 8883 to your Pi's IP address*** on your home network.
 
 At this point, you can start to install OwnTracks on your phone(s) and point them at your Mosquitto installation's web address. It's not a bad idea to stop right here and configure the phone(s) and Magic Mirror. This way you can test the rest of the system.
 
@@ -130,7 +130,7 @@ If you recall during the basic installation, I said that the password didn’t m
 We're going to use Let's Encrypt and their automated application to create, download and maintain signed certificates. I pulled these steps from [Pi My Life Up](https://pimylifeup.com/raspberry-pi-ssl-lets-encrypt/) and they worked pretty well.
 1. Install CertBot on your MQTT server: `sudo apt-get install certbot`
 2. Using your router, forward ports 80 and 443 to your MQTT server.
-3. Run CertBot to generate & sign your certificates: `certbot certonly --standalone -d [your subdomain here duckdns.org]`
+3. Run CertBot to generate & sign your certificates: `sudo certbot certonly --standalone -d [your subdomain here duckdns.org]`
 4. When prompted, enter your email address.
 
 
