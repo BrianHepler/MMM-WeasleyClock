@@ -28,7 +28,7 @@ sudo apt install mosquitto -y
 
 Configuring the MQTT server is pretty easy. Switch to the root user and create the file `/etc/mosquitto/conf.d/local.conf` as such:
 ```
-port 8883
+listener 1883
 
 log_dest syslog
 log_dest stdout
@@ -41,14 +41,15 @@ log_type unsubscribe
 connection_messages true
 
 # Owntracks specific configuration items
-allow_anonymous false
+allow_anonymous true
 allow_duplicate_messages false
 allow_zero_length_clientid false
 ```
 
 And then restart your mosquitto service to implement your configuration changes: `sudo service mosquitto restart`
 ## Configure the Module to Use Your Server
-It's pretty simple. Modify the module configuration in the Magic Mirror `config.js` file to point to you new Mosquitto server:
+It's pretty simple. Modify the module configuration in the Magic Mirror `config.js` file to point to your new Mosquitto server (you have to 
+disable some features because you're not using my server):
 ```
 {
     module: "MMM-WeasleyClock",
@@ -56,6 +57,8 @@ It's pretty simple. Modify the module configuration in the Magic Mirror `config.
     config: {
         uniqueId: "AllMine",
         host: "127.0.0.1",
+        port: 8883,
+        disableEncryption: true
     },
 },
 ```
@@ -69,7 +72,7 @@ There are other services that will give you power over your domain. This process
 
 Once the DNS entry is pointed at your house, you will need to log in to your router and forward one of the ports to the Pi. There are several articles on how to do this, but I would head over to [PortForward.com](https://portforward.com) first. You need to **forward port 8883 to your Pi's IP address*** on your home network.
 
-At this point, you can start to install OwnTracks on your phone(s) and point them at your Mosquitto installation's web address. It's not a bad idea to stop right here and configure the phone(s) and Magic Mirror. This way you can test the rest of the system.
+At this point, you can start to install OwnTracks on your phone(s) and point them at your Mosquitto installation's web address. It's not a bad idea to stop right here and configure the phone(s) and Magic Mirror to use port 8883. This way you can test the rest of the system.
 
 
 ### Optional: Use enhanced security
