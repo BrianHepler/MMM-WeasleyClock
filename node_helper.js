@@ -58,6 +58,7 @@ module.exports = NodeHelper.create({
 
 	establishConnection: function(config) {
 		var subTopic = "owntracks/" + config.uniqueId;
+
 		if (this.client == null) {
 			this.client = this.getMQTTClient(config);
 			// handle the events from the MQTT server
@@ -68,8 +69,13 @@ module.exports = NodeHelper.create({
 	
 				this.client.on("message", (topic, message) => {
 					console.log ("message received in topic " + topic);
-					var msgObj = JSON.parse(message.toString());
-					this.handleMessage(config, topic, msgObj);
+					try {
+						var msgObj = JSON.parse(message.toString());
+						this.handleMessage(config, topic, msgObj);
+					} catch (e) {
+						console.error("Error processing message: " + message.toString());
+					}
+
 				});
 			});
 	
@@ -86,28 +92,31 @@ module.exports = NodeHelper.create({
 	 * @param {Object} config The configuration object as modified by the user
 	 */
 	getMQTTClient: function(config) {
-		console.log("establishing mqtt connection using uniqueId: " + config.uniqueId);
-		var caFile = fs.readFileSync(this.path + "/weasley_mirror_ca.crt");
+		console.log("Establishing mqtt connection using uniqueId: " + config.uniqueId);
+
+		var userName = ((config.mirrorUser == null) ? "mirror-" + config.uniqueId : config.mirrorUser );
+		var userPass = ((config.mirrorPass == null) ? "BogusPassword" : config.mirrorPass );
+		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
+
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
-			username: config.uniqueId,
-			password: "Get_Out_Of_My_Code",
+			username: userName,
+			password: userPass,
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
-			clean: true,
-			ca: caFile
+			clean: true
 		};
 
-		console.debug(options);
-		client = mqtt.connect("mqtts://" + config.host, options);
+		console.debug("Connecting with: " + options);
+		client = mqtt.connect(protocol + config.host, options);
 
 		return client;
 	},
 
 	// Process the messages received by the client
 	handleMessage: function(config, topic, message) {
-		console.debug(message);
+		if (config.debug) console.debug("Message from front: " + message);
 
 		if (message == null) {
 			console.error("Null value from MQTT server.");
@@ -116,12 +125,13 @@ module.exports = NodeHelper.create({
 		// extract person from path
 		var topicArray = topic.split("/");
 		var person = topicArray[topicArray.length - 1];
-		console.debug("Parsing message for '" + person + "'");
+		if (config.debug) console.debug("Parsing message for '" + person + "'");
 
 		message.person = person;
 
 		// valid _type are: beacon, card, cmd, configuration, encrypted, location, lwt, steps, transition, waypoint, waypoints
-		console.debug("processing message type: " + message._type);
+		if (config.debug) console.debug("processing message type: " + message._type);
+
 		switch (message._type) {
 		case "waypoint": console.debug("New Waypoint detected");
 			this.sendSocketNotification("MMM-WeasleyClock-WAYPOINT", message);
@@ -141,7 +151,7 @@ module.exports = NodeHelper.create({
 			this.sendSocketNotification("MMM-WeasleyClock-LOST", message);
 			break;
 
-		default: console.debug("Event received but not processed.");
+		default: if (config.debug) console.debug("Event received but not processed.");
 		}
 		
 	},
@@ -155,7 +165,7 @@ module.exports = NodeHelper.create({
 	 */
 	processLocation: function(config, message) {
 		var vel = message.vel;
-		console.debug("Traveling at " + vel);
+		if (config.debug) console.debug("Traveling at " + vel);
 		
 		// check for region
 		if (message.inregions) {
@@ -174,11 +184,11 @@ module.exports = NodeHelper.create({
 		var event = message.event;
 
 		if (event == "enter") {
-			console.debug(message.person + " has entered region(s) '" + message.desc +"'");
+			if (config.debug) console.debug(message.person + " has entered region(s) '" + message.desc +"'");
 			message.inregions = new Array(message.desc);
 			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
 		} else {
-			console.debug(message.person + " has just left '" + message.inregions + "'");
+			if (config.debug) console.debug(message.person + " has just left '" + message.inregions + "'");
 			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
 
@@ -186,27 +196,25 @@ module.exports = NodeHelper.create({
 	},
 
 	playSound: function (config) {
-		// are we gonna do this?
 		var filename = "/sounds/crank-n-chimes.mp3";
 		let soundfile = this.path + filename;
 
 		// Make sure file exists before playing
 		try {
 			fs.accessSync(soundfile, fs.F_OK);
-			console.debug("Playing " + soundfile);
-			// new Audic(soundfile.toString()).play();
-			// var howl = new Howl([this.path + "\sounds\crank-n-chimes.mp3",this.path + "\sounds\crank-n-chimes.wav"]);
+			if (config.debug) console.debug("Playing " + soundfile);
+			
 			var howl = new Howl(
 				{
 					src:[soundfile],
 					onend: function() {
-						console.log("Finished playback.");
+						if (config.debug) console.debug("Finished playback.");
 					  }
 				});
 		
 		} catch (e) {
 			// Custom sequence doesn't exist
-			console.debug("Sound does not exist: " + soundfile);
+			console.error("Sound does not exist: " + soundfile);
 			return;
 		}
 
