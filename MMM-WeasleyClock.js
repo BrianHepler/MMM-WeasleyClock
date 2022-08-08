@@ -99,6 +99,7 @@ Module.register("MMM-WeasleyClock", {
       thr.appendChild(thl);
       locTable.appendChild(thr);
 
+      var j = 0;
       for (let person of peopleMap.values()) {
         var tr = document.createElement("tr");
         var personTd = document.createElement("td");
@@ -107,6 +108,7 @@ Module.register("MMM-WeasleyClock", {
         personTd.innerHTML = person.name;
         personTd.id = "perLbl-" + person.name;
         personTd.className = "person";
+        personTd.style.color = this.config.colorCycle[j];
 
         if (person.location != null) {
           personLocationTd.innerHTML = person.location;
@@ -116,10 +118,12 @@ Module.register("MMM-WeasleyClock", {
 
         personLocationTd.id = "perLoc-" + person.name;
         personLocationTd.className = "location";
+        personLocationTd.style.color = this.config.colorCycle[j];
 
         tr.appendChild(personTd);
         tr.appendChild(personLocationTd);
         locTable.appendChild(tr);
+        j++;
       }
       wrapper.appendChild(locTable);
     } else if (this.config.clockStyle == "clock") {
