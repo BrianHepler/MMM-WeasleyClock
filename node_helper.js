@@ -116,8 +116,7 @@ module.exports = NodeHelper.create({
 		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
 
 		var options = {
-			// clientId: "mirror-" + config.uniqueId,
-			clientId: "DevBox-" + config.uniqueId,  // REMOVE WHEN DONE DEVELOPING
+			clientId: "mirror-" + config.uniqueId,
 			username: userName,
 			password: userPass,
 			rejectUnauthorized: false,
