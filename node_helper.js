@@ -67,7 +67,6 @@ module.exports = NodeHelper.create({
 		}
 		
 		console.debug ("Establishing connection.");
-
 		if (this.client == null) {
 			console.debug("Getting new client object");
 			this.client = this.getMQTTClient(config);
@@ -133,9 +132,9 @@ module.exports = NodeHelper.create({
 		return client;
 	},
 
-	// Process the messages received by the client
+	// Process the messages received by the MQTT client
 	handleMessage: function(config, topic, message) {
-		if (config.debug) console.debug("Message from front: " + JSON.stringify(message));
+		if (config.debug) console.debug("Message from device: " + JSON.stringify(message));
 
 		if (message == null) {
 			console.error("Null value from MQTT server.");
