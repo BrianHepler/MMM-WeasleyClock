@@ -1,3 +1,5 @@
+/* eslint-disable curly */
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-trailing-spaces */
 /* Magic Mirror
  * Node Helper: MMM-WeasleyClock
@@ -17,7 +19,7 @@ module.exports = NodeHelper.create({
 
 	// Initialize MQTT connection object
 	start: function() {
-		// var client = new Messaging.Client()
+		
 	},
 
 	stop: function() {
@@ -57,33 +59,48 @@ module.exports = NodeHelper.create({
 	},
 
 	establishConnection: function(config) {
-		var subTopic = "owntracks/" + config.uniqueId;
-
-		if (this.client == null) {
-			this.client = this.getMQTTClient(config);
-			// handle the events from the MQTT server
-			this.client.on("connect", ()=> {
-				console.debug("Subscribing to all content for uniqueID " + subTopic);
-				this.client.subscribe(subTopic + "/+");
-				this.client.subscribe(subTopic + "/+/event");
-	
-				this.client.on("message", (topic, message) => {
-					console.log ("message received in topic " + topic);
-					try {
-						var msgObj = JSON.parse(message.toString());
-						this.handleMessage(config, topic, msgObj);
-					} catch (e) {
-						console.error("Error processing message: " + message.toString());
-					}
-
-				});
-			});
-	
-			this.client.on("error", function(error) {
-				console.error("Can't connect." + error);
-				process.exit(1);
-			});
+		var subTopic1 = "owntracks/" + config.uniqueId + "/";
+		var options = {
+			"qos": 2,
+			"rap": true,
+			"rh": true,
 		}
+		
+		console.debug ("Establishing connection.");
+		if (this.client == null) {
+			console.debug("Getting new client object");
+			this.client = this.getMQTTClient(config);
+		}
+		var client = this.client;
+
+		// connect and subscribe to Owntracks topics
+		client.on("connect", () => {
+			console.debug("Subscribing to all content for uniqueID");
+			client.subscribe(subTopic1 + "#", options, function(err, granted) {
+				if (err) {
+					console.error(err, "Error subscribing to topics.");
+				} 
+				console.debug("Subscribed: " + JSON.stringify(granted));
+			});
+		}); 
+		
+		// Handle published messages from Owntracks devices
+		client.on("message", (topic, message) => {
+			console.log ("message received in topic " + topic);
+			try {
+				var msgObj = JSON.parse(message.toString());
+				this.handleMessage(config, topic, msgObj);
+			} catch (e) {
+				console.error("Error processing message: " + message.toString());
+			}
+
+		});
+	
+		client.on("error", function(error) {
+			console.error("Can't connect." + error);
+			process.exit(1);
+		});
+		
 
 	},
 
@@ -94,7 +111,7 @@ module.exports = NodeHelper.create({
 	getMQTTClient: function(config) {
 		console.log("Establishing mqtt connection using uniqueId: " + config.uniqueId);
 
-		var userName = ((config.mirrorUser == null) ? "mirror-" + config.uniqueId : config.mirrorUser );
+		var userName = ((config.mirrorUser == null) ? config.uniqueId : config.mirrorUser );
 		var userPass = ((config.mirrorPass == null) ? "BogusPassword" : config.mirrorPass );
 		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
 
@@ -105,18 +122,18 @@ module.exports = NodeHelper.create({
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
-			clean: true
+			clean: false
 		};
 
-		console.debug("Connecting with: " + options);
+		console.debug("Connecting with: " + JSON.stringify(options));
 		client = mqtt.connect(protocol + config.host, options);
 
 		return client;
 	},
 
-	// Process the messages received by the client
+	// Process the messages received by the MQTT client
 	handleMessage: function(config, topic, message) {
-		if (config.debug) console.debug("Message from front: " + message);
+		if (config.debug) console.debug("Message from device: " + JSON.stringify(message));
 
 		if (message == null) {
 			console.error("Null value from MQTT server.");

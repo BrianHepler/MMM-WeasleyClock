@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable prettier/prettier */
 /* eslint-disable indent */
 /* global Module */
@@ -98,6 +99,7 @@ Module.register("MMM-WeasleyClock", {
       thr.appendChild(thl);
       locTable.appendChild(thr);
 
+      var j = 0;
       for (let person of peopleMap.values()) {
         var tr = document.createElement("tr");
         var personTd = document.createElement("td");
@@ -106,6 +108,7 @@ Module.register("MMM-WeasleyClock", {
         personTd.innerHTML = person.name;
         personTd.id = "perLbl-" + person.name;
         personTd.className = "person";
+        personTd.style.color = this.config.colorCycle[j];
 
         if (person.location != null) {
           personLocationTd.innerHTML = person.location;
@@ -115,10 +118,12 @@ Module.register("MMM-WeasleyClock", {
 
         personLocationTd.id = "perLoc-" + person.name;
         personLocationTd.className = "location";
+        personLocationTd.style.color = this.config.colorCycle[j];
 
         tr.appendChild(personTd);
         tr.appendChild(personLocationTd);
         locTable.appendChild(tr);
+        j++;
       }
       wrapper.appendChild(locTable);
     } else if (this.config.clockStyle == "clock") {
@@ -134,7 +139,7 @@ Module.register("MMM-WeasleyClock", {
       var i = 0;
       for (let location of locationMap.values()) {
         Log.debug("Placing " + location.name);
-        
+
         const plier = ((2 * Math.PI) / this.locationMap.size) * i;
 
         var cordx = Math.cos(plier) * this.config.radius;
@@ -170,9 +175,8 @@ Module.register("MMM-WeasleyClock", {
         person.color = this.config.colorCycle[j];
         person.handSVG = hand;
         j++;
-        
+
         Log.debug("Added hand: " + hand.id());
-        
       }
     }
     return wrapper;
@@ -281,7 +285,7 @@ Module.register("MMM-WeasleyClock", {
       Log.debug(name + " is traveling.");
       person.location = "Traveling";
       if (this.config.clockStyle == "table") {
-        this.updateDom();
+        this.updateDom(1000);
       } else {
         this.rotateHand(name, "Traveling");
       }
@@ -303,10 +307,10 @@ Module.register("MMM-WeasleyClock", {
 
     if (person.location != "Lost") {
       Log.debug(name + " is now lost. :(");
-      
+
       person.location = "Lost";
       if (this.config.clockStyle == "table") {
-        this.updateDom();
+        this.updateDom(1000);
       } else {
         this.rotateHand(name, "Lost");
       }
@@ -325,7 +329,7 @@ Module.register("MMM-WeasleyClock", {
   processUpdate: function (name, data) {
     var person = this.peopleMap.get(name);
     var location;
-    
+
     Log.debug("Processing location update for '" + name + "'");
     Log.debug("Regions: " + data.inregions);
 
@@ -346,20 +350,21 @@ Module.register("MMM-WeasleyClock", {
       // people in unknown locations are lost
       Log.debug("Location '" + data.inregions[0] + "' not found.");
       this.processLost(name);
-      
+
     } else {
       // found name, location.
 
       // avoid updates on duplicate data
+      Log.debug("Checking '" + person.location + "' against '" + location.name +"'");
       if (person.location == location.name) {
         Log.debug("Duplicate location received for " + name);
         return;
       }
 
       Log.debug("Found matching location.");
-
+      person.location = location.name;
       if (this.config.clockStyle == "table") {
-        this.updateDom();
+        this.updateDom(1000);
       } else {
         this.rotateHand(name, location.name);
       }
@@ -375,7 +380,7 @@ Module.register("MMM-WeasleyClock", {
    */
   socketNotificationReceived: function (notification, payload) {
     Log.debug("Received notification '" + notification + "' from Weasley helper.");
-    
+
     this.loaded = true;
     this.mqttVal = payload;
 
