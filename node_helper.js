@@ -59,7 +59,8 @@ module.exports = NodeHelper.create({
 	},
 
 	establishConnection: function(config) {
-		var subTopic1 = "owntracks/" + config.uniqueId + "/";
+		var subTopic1 = "owntracks/" + config.uniqueId + "/+";
+		var subTopic2 = "owntracks/" + config.uniqueId + "/+/event";
 		var options = {
 			"qos": 2,
 			"rap": true,
@@ -76,7 +77,7 @@ module.exports = NodeHelper.create({
 		// connect and subscribe to Owntracks topics
 		client.on("connect", () => {
 			console.debug("Subscribing to all content for uniqueID");
-			client.subscribe(subTopic1 + "#", options, function(err, granted) {
+			client.subscribe({subTopic1, subTopic2}, options, function(err, granted) {
 				if (err) {
 					console.error(err, "Error subscribing to topics.");
 				} 
@@ -116,7 +117,8 @@ module.exports = NodeHelper.create({
 		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
 
 		var options = {
-			clientId: "mirror-" + config.uniqueId,
+			// clientId: "mirror-" + config.uniqueId,
+			clientId: "devLocal",
 			username: userName,
 			password: userPass,
 			rejectUnauthorized: false,
@@ -141,7 +143,7 @@ module.exports = NodeHelper.create({
 
 		// extract person from path
 		var topicArray = topic.split("/");
-		var person = topicArray[topicArray.length - 1];
+		var person = topicArray[2];
 		if (config.debug) console.debug("Parsing message for '" + person + "'");
 
 		message.person = person;
