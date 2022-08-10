@@ -207,6 +207,18 @@ Start with the list of locations that you defined in the `locations` parameter i
 * Add a radius in the last field of the region, measured in meters. 250 meters is pretty good.
 * Click on the check mark icon at the top to save your region
 
+## Notifications
+The MMM-WeasleyClock module broadcasts notifications with "WEASLEYCLOCK_UPDATE" whenever one of the defined people changes state ("Lost" to "Traveling", etc.). The payload is a simple object:
+```
+payload {
+    name: "Harry",
+    location: "Jail",
+    lat: -35.12547,
+    lon: 75.25874,
+    speed: 55
+}
+```
+
 ## If You Want to Use Your Own MQTT Server
 You don't have to use my MQTT server. You are welcome to set up your own. I have a separate page on [how to set up Mosquitto](MosquittoSetup.md) on your Magic Mirror so you can keep your data to yourself.
 
@@ -221,7 +233,7 @@ where you are and if you are in a defined area.
 I am hosting an MQTT server for this module at weasleymirror.duckdns.org. You are welcome to set up your own server or use mine. I can't see your messages, but I can see if you connect successfully. **By default, the module is configured to use my server.**
 
 ## Development
-I've written up some advice to help over at the [Developer's Notes](developmentnotes.md). I've also included some debugging tips.
+I've written up some advice to help over at the [Developer's Notes](developmentNotes.md). I've also included some debugging tips.
 
 ### Dependencies
 * A working installation of [Magic Mirror](https://github.com/MichMich/MagicMirror)
@@ -230,7 +242,7 @@ I've written up some advice to help over at the [Developer's Notes](developmentn
 * `Howler` to play the sound file (loaded via npm)
 
 ## ToDo
-* Get the table mode to work properly
+~~* Get the table mode to work properly~~
 * Better graphics for the clock, including backgrounds and fancy hands
 * Third style of display, using [Flapper](https://github.com/jayKayEss/Flapper)
 * Add language translations for "Traveling" and "Lost"

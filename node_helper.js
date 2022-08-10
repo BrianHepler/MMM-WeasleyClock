@@ -61,10 +61,10 @@ module.exports = NodeHelper.create({
 	establishConnection: function(config) {
 		var subTopic1 = "owntracks/" + config.uniqueId + "/+";
 		var subTopic2 = "owntracks/" + config.uniqueId + "/+/event";
-		var options = {
+		const options = {
 			"qos": 2,
 			"rap": true,
-			"rh": true,
+			"rh": true
 		}
 		
 		console.debug ("Establishing connection.");
@@ -77,7 +77,7 @@ module.exports = NodeHelper.create({
 		// connect and subscribe to Owntracks topics
 		client.on("connect", () => {
 			console.debug("Subscribing to all content for uniqueID");
-			client.subscribe({subTopic1, subTopic2}, options, function(err, granted) {
+			client.subscribe([subTopic1, subTopic2], options, function(err, granted) {
 				if (err) {
 					console.error(err, "Error subscribing to topics.");
 				} 
@@ -117,14 +117,13 @@ module.exports = NodeHelper.create({
 		var protocol = ((config.disableEncryption) ? "mqtt://" : "mqtts://");
 
 		var options = {
-			// clientId: "mirror-" + config.uniqueId,
-			clientId: "devLocal",
+			clientId: "mirror-" + config.uniqueId,
 			username: userName,
 			password: userPass,
 			rejectUnauthorized: false,
 			host: config.host,
 			port: config.port,
-			clean: false
+			clean: true
 		};
 
 		console.debug("Connecting with: " + JSON.stringify(options));
@@ -156,7 +155,7 @@ module.exports = NodeHelper.create({
 			this.sendSocketNotification("MMM-WeasleyClock-WAYPOINT", message);
 			break;
 
-		case "location": console.debug("location detected");
+		case "location": console.debug("location message detected");
 			this.processLocation(config, message);
 			break;
 

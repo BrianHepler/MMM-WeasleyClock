@@ -289,6 +289,7 @@ Module.register("MMM-WeasleyClock", {
       } else {
         this.rotateHand(name, "Traveling");
       }
+      this.broadcastUpdate(name, "Traveling", data);
     } else {
       Log.debug("Duplicate assignment of " + name + " to Traveling");
     }
@@ -298,7 +299,7 @@ Module.register("MMM-WeasleyClock", {
    * Update a person to LOST status.
    * @param {*} name Name of the tracked person
    */
-  processLost: function (name) {
+  processLost: function (name, payload) {
     var person = this.peopleMap.get(name);
     if (person == undefined) {
       Log.info(name + " is not one of us. Shun the unbeliever!");
@@ -314,8 +315,9 @@ Module.register("MMM-WeasleyClock", {
       } else {
         this.rotateHand(name, "Lost");
       }
+      this.broadcastUpdate(name, "Lost", payload);
     } else {
-      Log.debug("Duplicate assignment of " + name + "to Lost");
+      Log.debug("Duplicate assignment of " + name + " to Lost");
     }
   },
 
@@ -368,6 +370,7 @@ Module.register("MMM-WeasleyClock", {
       } else {
         this.rotateHand(name, location.name);
       }
+      this.broadcastUpdate(name, location.name, data);
     }
   },
 
@@ -389,7 +392,7 @@ Module.register("MMM-WeasleyClock", {
     }
 
     if (notification === "MMM-WeasleyClock-LOST") {
-      this.processLost(payload.person);
+      this.processLost(payload.person, payload);
     }
 
     if (notification === "MMM-WeasleyClock-UPDATE") {
@@ -399,7 +402,17 @@ Module.register("MMM-WeasleyClock", {
     if (notification === "MMM-WeasleyClock-WAYPOINT") {
       this.processNewLocation(payload);
     }
-    // this.updateDom();
+  },
+
+  broadcastUpdate: function(person, loc, data) {
+    var payload = {
+      name: person,
+      location: loc,
+      lon: data.lon,
+      lat: data.lat,
+      speed: data.vel
+    };
+    this.sendNotification("WEASLEYCLOCK_UPDATE", payload);
   },
 
   createHand: function (svg, name) {
