@@ -118,6 +118,7 @@ module.exports = NodeHelper.create({
 
 		var options = {
 			clientId: "mirror-" + config.uniqueId,
+			// clientId: "devMirror",
 			username: userName,
 			password: userPass,
 			rejectUnauthorized: false,
@@ -206,7 +207,7 @@ module.exports = NodeHelper.create({
 			message.inregions = new Array(message.desc);
 			this.sendSocketNotification("MMM-WeasleyClock-UPDATE", message);
 		} else {
-			if (config.debug) console.debug(message.person + " has just left '" + message.inregions + "'");
+			if (config.debug) console.debug(message.person + " has just left '" + message.desc + "'");
 			this.sendSocketNotification("MMM-WeasleyClock-TRAVELING", message);
 		}
 
@@ -233,7 +234,6 @@ module.exports = NodeHelper.create({
 		} catch (e) {
 			// Custom sequence doesn't exist
 			console.error("Sound does not exist: " + soundfile);
-			return;
 		}
 
 	},
