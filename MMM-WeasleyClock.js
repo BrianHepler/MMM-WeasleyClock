@@ -388,7 +388,7 @@ Module.register("MMM-WeasleyClock", {
     this.mqttVal = payload;
 
     if (notification === "MMM-WeasleyClock-TRAVELING") {
-      this.processTraveling(payload.person);
+      this.processTraveling(payload.person, payload);
     }
 
     if (notification === "MMM-WeasleyClock-LOST") {
@@ -404,14 +404,25 @@ Module.register("MMM-WeasleyClock", {
     }
   },
 
+  /**
+   * Send a notification to other Magic Mirror modules.
+   * @param {*} person The name of the person in question
+   * @param {*} loc The named location where the person is now
+   * @param {*} data The MQTT message published by OwnTracks.
+   */
   broadcastUpdate: function(person, loc, data) {
-    var payload = {
-      name: person,
-      location: loc,
-      lon: data.lon,
-      lat: data.lat,
-      speed: data.vel
-    };
+    try {
+      var payload = {
+        name: person,
+        location: loc,
+        lon: data.lon,
+        lat: data.lat,
+        speed: data.vel
+      };
+    } catch ( err ) {
+      Log.error("Failed to create notification object: " + err.message);
+    }
+    Log.debug("Sending notification: " + JSON.stringify(payload));
     this.sendNotification("WEASLEYCLOCK_UPDATE", payload);
   },
 
