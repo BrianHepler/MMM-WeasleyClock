@@ -35,7 +35,10 @@ Module.register("MMM-WeasleyClock", {
   requiresVersion: "2.1.0", // Required version of MagicMirror
 
   getScripts: function () {
-    return [this.file("lib/svg.min.js"), this.file("lib/howler.min.js")];
+    return [this.file("lib/svg.min.js"), 
+    this.file("lib/howler.min.js"),
+    this.file("flapper/jquery.flapper.js"),
+    "https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"];
   },
 
   getStyles: function () {
@@ -87,45 +90,9 @@ Module.register("MMM-WeasleyClock", {
     var peopleMap = this.peopleMap;
 
     if (this.config.clockStyle == "table") {
-      var locTable = document.createElement("table");
-      locTable.className = "table";
-
-      var thr = document.createElement("tr");
-      var thp = document.createElement("th");
-      var thl = document.createElement("th");
-      thp.innerHTML = "<u>Who</u>";
-      thl.innerHTML = "<u>Where</u>";
-      thr.appendChild(thp);
-      thr.appendChild(thl);
-      locTable.appendChild(thr);
-
-      var j = 0;
-      for (let person of peopleMap.values()) {
-        var tr = document.createElement("tr");
-        var personTd = document.createElement("td");
-        var personLocationTd = document.createElement("td");
-
-        personTd.innerHTML = person.name;
-        personTd.id = "perLbl-" + person.name;
-        personTd.className = "person";
-        personTd.style.color = this.config.colorCycle[j];
-
-        if (person.location != null) {
-          personLocationTd.innerHTML = person.location;
-        } else {
-          personLocationTd.innerHTML = "Lost";
-        }
-
-        personLocationTd.id = "perLoc-" + person.name;
-        personLocationTd.className = "location";
-        personLocationTd.style.color = this.config.colorCycle[j];
-
-        tr.appendChild(personTd);
-        tr.appendChild(personLocationTd);
-        locTable.appendChild(tr);
-        j++;
-      }
+      var locTable = getTable(false);
       wrapper.appendChild(locTable);
+
     } else if (this.config.clockStyle == "clock") {
       // build the clock
       var draw = SVG().addTo(wrapper).size("100%", "100%");
@@ -178,8 +145,97 @@ Module.register("MMM-WeasleyClock", {
 
         Log.debug("Added hand: " + hand.id());
       }
+      // end table generation
+    } else if (this.config.clockStyle == "flapper") {
+      var flapTable = getTable(true);
+      wrapper.appendChild(flapTable);
+      // end flapper generation
     }
     return wrapper;
+  },
+
+  getTable: function(bolFlapper) {
+    var locTable = document.createElement("table");
+    locTable.className = "table";
+
+    var thr = document.createElement("tr");
+    var thp = document.createElement("th");
+    var thl = document.createElement("th");
+    thp.innerHTML = "<u>Who</u>";
+    thl.innerHTML = "<u>Where</u>";
+    thr.appendChild(thp);
+    thr.appendChild(thl);
+    locTable.appendChild(thr);
+
+    var j = 0;
+    for (let person of peopleMap.values()) {
+      var tr = document.createElement("tr");
+      var personTd = document.createElement("td");
+      var personLocationTd = document.createElement("td");
+
+      // set up colored name table cell
+      personTd.innerHTML = person.name;
+      personTd.id = "perLbl-" + person.name;
+      personTd.className = "person";
+      personTd.style.color = this.config.colorCycle[j];
+
+      // set up location cell
+      if (bolFlapper) {
+        var locInput = document.createElement("input");
+        locInput.id = "flapLoc-" + person.name;
+        locInput.addEventListener("change", ()=>{flapper(getFlapOptions())});
+        personLocationTd.appendChild(locInput);
+      } else {
+        if (person.location != null) {
+          personLocationTd.innerHTML = person.location;
+        } else {
+          personLocationTd.innerHTML = "Lost";
+        }
+      }
+
+      personLocationTd.id = "perLoc-" + person.name;
+      personLocationTd.className = "location";
+      personLocationTd.style.color = this.config.colorCycle[j];
+
+      tr.appendChild(personTd);
+      tr.appendChild(personLocationTd);
+      locTable.appendChild(tr);
+      j++;
+    }
+  },
+
+  getFlapOptions: function ()
+  {
+    var maxLocSize = 0;
+    this.config.locations.array.forEach(element => {
+      if (element.length > maxLocSize) {
+        maxLocSize = element.length;
+      }
+    });
+
+    var options = {
+      align: "right",
+      size: maxLocSize,
+      chars_preset: "hexnum"
+    }
+    return options;
+  },
+
+  /**
+   * Creates and returns a flapper table
+   * @returns A table with numPeople rows and max location length wide
+   */
+  getFlapperTable: function() {
+    var flapper = document.createElement("div");
+    flapper.setAttribute("id", "flapper");
+
+    for (let person of peopleMap.values()) {
+
+    }
+
+    var inputAnchor = document.createElement("input");
+    inputAnchor.setAttribute("id", "flapper");
+
   },
 
   /**
@@ -265,7 +321,7 @@ Module.register("MMM-WeasleyClock", {
         person.rotationLock = false;
       }, 1000 * 10);
     } catch (e) {
-      Log.err("Unable to rotate hand for " + name + " to " + location, e);
+      console.log("Unable to rotate hand for " + name + " to " + location, e);
     }
   },
 
